@@ -36,6 +36,9 @@ export default function ThreeViewer({
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const targetProgressRef = useRef(assemblyProgress);
+  const currentProgressRef = useRef(assemblyProgress);
+
 
   // ═══ 초기 설정 ═══
   useEffect(() => {
@@ -117,9 +120,43 @@ export default function ThreeViewer({
     let animationId;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
+
+      currentProgressRef.current = THREE.MathUtils.lerp(
+        currentProgressRef.current,
+        targetProgressRef.current,
+        0.1
+      );
+
+      const progress = currentProgressRef.current / 100;
+      const explosionFactor = 1.0;
+
+      meshesRef.current.forEach((mesh, meshName) => {
+        const originalPos = originalPositionsRef.current.get(meshName);
+        if (!originalPos) return;
+
+        const worldPos = new THREE.Vector3();
+        mesh.getWorldPosition(worldPos);
+
+        const explosionDir = worldPos.clone().normalize();
+        if (explosionDir.length() < 0.01) {
+          explosionDir
+            .set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
+            .normalize();
+        }
+
+        const distance = originalPos.length() * explosionFactor;
+
+        const targetPos = originalPos
+          .clone()
+          .add(explosionDir.multiplyScalar(distance * (1 - progress)));
+
+        mesh.position.lerp(targetPos, 0.15)
+      });
+
       controls.update();
       renderer.render(scene, camera);
     };
+
     animate();
 
     // ✅ 1) window resize
@@ -241,42 +278,10 @@ export default function ThreeViewer({
 
   // ═══ 조립/분해 애니메이션 ═══
   useEffect(() => {
-    if (!sceneRef.current || meshesRef.current.size === 0) return;
-
-    const progress = assemblyProgress / 100; // 0~1
-    const explosionFactor = 1.5; // 분해 시 이동 거리 배율
-
-    meshesRef.current.forEach((mesh, meshName) => {
-      const originalPos = originalPositionsRef.current.get(meshName);
-      if (!originalPos) return;
-
-      // 분해 방향: 원점에서 바깥쪽으로
-      const explosionDir = new THREE.Vector3();
-
-      // mesh의 월드 위치 기준으로 폭발 방향 계산
-      const worldPos = new THREE.Vector3();
-      mesh.getWorldPosition(worldPos);
-
-      // 중심에서 바깥쪽으로 방향 벡터
-      explosionDir.copy(worldPos).normalize();
-
-      // 방향이 0인 경우 (정확히 중심) 임의 방향 설정
-      if (explosionDir.length() < 0.01) {
-        explosionDir
-          .set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
-          .normalize();
-      }
-
-      // 분해된 위치 = 원본 위치 + (폭발 방향 * 거리)
-      const distance = originalPos.length() * explosionFactor;
-      const explodedPos = originalPos
-        .clone()
-        .add(explosionDir.multiplyScalar(distance * (1 - progress)));
-
-      // 부드러운 보간 (ease-out)
-      mesh.position.lerp(explodedPos, 0.1);
-    });
+    targetProgressRef.current = assemblyProgress;
   }, [assemblyProgress]);
+
+
 
   // ═══ 부품 하이라이트 ═══
   useEffect(() => {
