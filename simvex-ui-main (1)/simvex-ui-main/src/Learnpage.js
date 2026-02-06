@@ -1,6 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import "./Shared.css";
 import "./Learnpage.css";
+
+// pdf generation libraries, npm install jspdf html2canvas 입력 필요 -> CDN으로 대체
+//import jsPDF from "jspdf";
+//import html2canvas from "html2canvas";
+
 import ThreeViewer from "./ThreeViewer";
 
 /* ════════════════════════════════════════════ */
@@ -423,10 +428,63 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   };
 
   /* ✅ PDF 리포트 생성 */
-  const generatePdfReport = () => {
-    console.log("PDF 리포트 생성 요청");
-    alert("PDF 리포트 생성 기능은 추후 구현 예정입니다.");
-    // TODO: 실제 PDF 생성 API 호출
+  const generatePdfReport = async () => {
+
+    if (!window.jspdf || !window.html2canvas) {
+      alert("PDF 생성 라이브러리(CDN)가 로드되지 않았습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    const reportElement = document.getElementById("hidden-pdf-report");
+    const viewerElement = document.querySelector(".viewer-3d"); // 📸 캡처할 화면 영역 (3D 뷰어)
+
+    if (!reportElement || !viewerElement) {
+      alert("필요한 요소를 찾을 수 없습니다.");
+      return;
+    }
+
+    const btn = document.querySelector(".pdf-report-btn");
+    if(btn) btn.innerText = "이미지 캡처 중...";
+
+    try {
+      // 📸 [1단계] 현재 화면(3D 뷰어)을 먼저 캡처
+      const screenCanvas = await window.html2canvas(viewerElement, {
+        useCORS: true,
+        backgroundColor: "#151e2a" // 뷰어 배경색과 비슷하게 설정 (선택사항)
+      });
+      const screenImgData = screenCanvas.toDataURL("image/png");
+
+      // 📸 [2단계] 캡처한 이미지를 숨겨진 리포트 안의 img 태그에 주입
+      const reportImgTag = document.getElementById("report-screenshot-img");
+      if (reportImgTag) {
+        reportImgTag.src = screenImgData;
+      }
+
+      if(btn) btn.innerText = "PDF 생성 중...";
+
+      // 📄 [3단계] 이미지가 들어간 리포트를 캡처하여 PDF 생성
+      const canvas = await window.html2canvas(reportElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const { jsPDF } = window.jspdf; 
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
+      pdf.save(`SIMVEX_Report_${selectedModel?.title || "Study"}.pdf`);
+
+    } catch (err) {
+      console.error("PDF 생성 실패:", err);
+      alert(`오류 발생: ${err.message}`);
+    } finally {
+      if(btn) btn.innerText = "PDF 리포트 생성";
+    }
   };
 
   return (
@@ -912,6 +970,83 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
           </div>
         </div>
       )}
+
+      {/* ════════════════════════════════════════════ */}
+      {/* PDF 생성용 숨겨진 리포트 템플릿 (보이지 않음)  */}
+      {/* ════════════════════════════════════════════ */}
+      <div 
+        id="hidden-pdf-report" 
+        style={{
+          position: "absolute",
+          top: "-10000px",
+          left: "-10000px",
+          width: "210mm",
+          minHeight: "297mm",
+          padding: "20mm",
+          backgroundColor: "#fff",
+          color: "#000",
+          fontFamily: "'Noto Sans KR', sans-serif",
+          zIndex: -1
+        }}
+      >
+        {/* ... (이전 답변의 리포트 내용 코드 복사) ... */}
+         <div style={{ borderBottom: "2px solid #333", paddingBottom: "10px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "end" }}>
+          <div>
+            <h1 style={{ fontSize: "24px", fontWeight: "bold", margin: 0, color: "#1a3a4a" }}>SIMVEX 학습 리포트</h1>
+            <p style={{ fontSize: "12px", color: "#666", margin: "5px 0 0" }}>Simulation & Virtual Experience Education</p>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <p style={{ fontSize: "12px", margin: 0 }}>생성일: {new Date().toLocaleDateString()}</p>
+            <p style={{ fontSize: "14px", fontWeight: "bold", margin: "4px 0 0" }}>{selectedModel?.title || "학습 모델 미선택"}</p>
+          </div>
+        </div>
+
+        {/* 1. 학습 요약 */}
+        <div style={{ marginBottom: "30px" }}>
+          <h2 style={{ fontSize: "18px", borderLeft: "4px solid #00bcd4", paddingLeft: "10px", marginBottom: "12px", color: "#333" }}>1. 학습 개요</h2>
+          <div style={{ background: "#f5f7fa", padding: "15px", borderRadius: "8px", fontSize: "13px", lineHeight: "1.6" }}>
+            <p style={{ margin: "0 0 5px" }}><strong>• 학습 주제:</strong> {selectedModel?.title}</p>
+
+            {/* 사진 */}
+            <div style={{ margin: "10px 0", border: "1px solid #ddd", borderRadius: "4px", overflow: "hidden" }}>
+              <p style={{ margin: "5px 10px", fontWeight: "bold", color: "#555" }}>• 현재 조립 상태 ({assemblyProgress}%)</p>
+              <img 
+                id="report-screenshot-img" 
+                alt="학습 화면 스크린샷" 
+                style={{ width: "100%", height: "auto", display: "block", minHeight: "150px", backgroundColor: "#eee" }} 
+              />
+            </div>
+          
+          </div>
+        </div>
+
+        {/* 2. AI 대화 기록 */}
+
+        {/* 3. 내 학습 메모 */}
+        <div style={{ marginBottom: "30px" }}>
+          <h2 style={{ fontSize: "18px", borderLeft: "4px solid #8b5cf6", paddingLeft: "10px", marginBottom: "12px", color: "#333" }}>3. 학습 메모</h2>
+          {memos.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {memos.map((memo, i) => (
+                <div key={i} style={{ border: "1px solid #ddd", borderRadius: "6px", padding: "12px", background: "#fff" }}>
+                  <div style={{ fontSize: "11px", color: "#888", marginBottom: "4px" }}>{memo.label}</div>
+                  <div style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "6px", color: "#333" }}>{memo.title || "(제목 없음)"}</div>
+                  <div style={{ fontSize: "12px", color: "#555", whiteSpace: "pre-wrap" }}>{memo.content || "(내용 없음)"}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: "#888", fontStyle: "italic", fontSize: "13px" }}>작성된 메모가 없습니다.</p>
+          )}
+        </div>
+        
+        {/* 푸터 */}
+        <div style={{ marginTop: "50px", borderTop: "1px solid #eee", paddingTop: "15px", textAlign: "center", fontSize: "11px", color: "#aaa" }}>
+          SIMVEX - Simulation Virtual Experience Education Platform
+        </div>
+      </div>
+
+
     </>
   );
 }
