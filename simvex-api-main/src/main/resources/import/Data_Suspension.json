@@ -1,0 +1,87 @@
+{
+  "project_name": "SIMVEX_PROJECT",
+  "base_path": "./Integrated 3D Asset/",
+  "integrated_file": "SUSPENSION.glb",
+  "assets": [
+    {
+      "id": "BASE",
+      "title": "BASE",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0101,
+        "y": -0.0429,
+        "z": 0.0429
+      },
+      "vector": {
+        "x": -0.6161,
+        "y": -0.1365,
+        "z": 0.2091
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "NUT",
+      "title": "NUT",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0105,
+        "y": 0.0353,
+        "z": -0.0159
+      },
+      "vector": {
+        "x": -0.6161,
+        "y": -0.1365,
+        "z": 0.2091
+      },
+      "explodeVector": {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "ROD",
+      "title": "ROD",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0105,
+        "y": 0.0353,
+        "z": -0.0159
+      },
+      "vector": {
+        "x": -0.6161,
+        "y": -0.1365,
+        "z": 0.2091
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "SPRING",
+      "title": "SPRING",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0095,
+        "y": -0.0398,
+        "z": 0.0415
+      },
+      "vector": {
+        "x": -0.6161,
+        "y": -0.1365,
+        "z": 0.2091
+      },
+      "explodeVector": {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      }
+    }
+  ]
+}

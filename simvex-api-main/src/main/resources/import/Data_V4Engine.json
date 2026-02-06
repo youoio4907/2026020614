@@ -1,0 +1,607 @@
+{
+  "project_name": "SIMVEX_PROJECT",
+  "base_path": "./Integrated 3D Asset/",
+  "integrated_file": "V4_Engine.glb",
+  "assets": [
+    {
+      "id": "Connecting_Rod04",
+      "title": "Connecting_Rod04",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.2212,
+        "y": 0.0871,
+        "z": 0.0484
+      },
+      "vector": {
+        "x": -2.5541,
+        "y": 1.5459,
+        "z": 2.6683
+      },
+      "explodeVector": {
+        "x": -1,
+        "y": 1,
+        "z": -1
+      }
+    },
+    {
+      "id": "Connecting_Rod_Cap01",
+      "title": "Connecting_Rod_Cap01",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.2229,
+        "y": -0.1133,
+        "z": 0.0227
+      },
+      "vector": {
+        "x": -1.8301,
+        "y": 1.5139,
+        "z": 1.9483
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": -1
+      }
+    },
+    {
+      "id": "Conrod_Bolt",
+      "title": "Conrod_Bolt",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.2235,
+        "y": -0.0853,
+        "z": 0.0706
+      },
+      "vector": {
+        "x": 0.1775,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Crankshaft",
+      "title": "Crankshaft",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0687,
+        "y": -0.0785,
+        "z": 0.0239
+      },
+      "vector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      }
+    },
+    {
+      "id": "Piston01",
+      "title": "Piston01",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.223,
+        "y": 0.0584,
+        "z": 0.048
+      },
+      "vector": {
+        "x": 0.9612,
+        "y": -1.5189,
+        "z": 1.0129
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "id": "Piston_Pin01",
+      "title": "Piston_Pin01",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.4913,
+        "y": 0.1632,
+        "z": 0.0363
+      },
+      "vector": {
+        "x": -2.8889,
+        "y": 1.5192,
+        "z": 2.8766
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Connecting_Rod01",
+      "title": "Connecting_Rod01",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.3378,
+        "y": 0.1645,
+        "z": 0.0099
+      },
+      "vector": {
+        "x": 2.9471,
+        "y": -1.5324,
+        "z": 3.0131
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": -1
+      }
+    },
+    {
+      "id": "Connecting_Rod02",
+      "title": "Connecting_Rod02",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.5637,
+        "y": 0.0825,
+        "z": 0.0332
+      },
+      "vector": {
+        "x": 0.7564,
+        "y": -1.5426,
+        "z": 0.7372
+      },
+      "explodeVector": {
+        "x": 1,
+        "y": 1,
+        "z": -1
+      }
+    },
+    {
+      "id": "Connecting_Rod03",
+      "title": "Connecting_Rod03",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.4497,
+        "y": 0.1676,
+        "z": 0.0332
+      },
+      "vector": {
+        "x": 0.6214,
+        "y": -1.5484,
+        "z": 0.5635
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": -1
+      }
+    },
+    {
+      "id": "Connecting_Rod_Cap02",
+      "title": "Connecting_Rod_Cap02",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.4516,
+        "y": -0.0316,
+        "z": 0.0223
+      },
+      "vector": {
+        "x": -2.7498,
+        "y": 1.5451,
+        "z": 2.8198
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": -1
+      }
+    },
+    {
+      "id": "Connecting_Rod_Cap03",
+      "title": "Connecting_Rod_Cap03",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.5685,
+        "y": -0.1185,
+        "z": 0.0272
+      },
+      "vector": {
+        "x": 2.6296,
+        "y": 1.5228,
+        "z": -2.6124
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": -1
+      }
+    },
+    {
+      "id": "Connecting_Rod_Cap04",
+      "title": "Connecting_Rod_Cap04",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.3397,
+        "y": -0.0363,
+        "z": 0.0241
+      },
+      "vector": {
+        "x": -1.2801,
+        "y": 1.5606,
+        "z": 1.1857
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": -1
+      }
+    },
+    {
+      "id": "Piston02",
+      "title": "Piston02",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.3347,
+        "y": 0.1374,
+        "z": 0.0081
+      },
+      "vector": {
+        "x": 0.1744,
+        "y": -1.5407,
+        "z": 0.1355
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "id": "Piston03",
+      "title": "Piston03",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.4507,
+        "y": 0.135,
+        "z": 0.0387
+      },
+      "vector": {
+        "x": 0.2901,
+        "y": -1.4766,
+        "z": 0.2643
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "id": "Piston04",
+      "title": "Piston04",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.5559,
+        "y": 0.056,
+        "z": 0.0345
+      },
+      "vector": {
+        "x": 1.2684,
+        "y": -1.5372,
+        "z": 1.2365
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0.3,
+        "z": 1
+      }
+    },
+    {
+      "id": "Piston_Pin02",
+      "title": "Piston_Pin02",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.5977,
+        "y": 0.0853,
+        "z": 0.034
+      },
+      "vector": {
+        "x": -1.0706,
+        "y": 1.5489,
+        "z": 1.0515
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Pin03",
+      "title": "Piston_Pin03",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.2609,
+        "y": 0.0895,
+        "z": 0.0449
+      },
+      "vector": {
+        "x": -2.3899,
+        "y": 1.467,
+        "z": 2.0909
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Pin04",
+      "title": "Piston_Pin04",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.3734,
+        "y": 0.1656,
+        "z": 0.01
+      },
+      "vector": {
+        "x": 3.0075,
+        "y": 1.5216,
+        "z": -3.0014
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring01",
+      "title": "Piston_Ring01",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.3346,
+        "y": 0.197,
+        "z": 0.0103
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0,
+        "z": -3.133
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring02",
+      "title": "Piston_Ring02",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.3346,
+        "y": 0.2093,
+        "z": 0.0103
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0,
+        "z": -3.133
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring03",
+      "title": "Piston_Ring03",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.3346,
+        "y": 0.2192,
+        "z": 0.0103
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0,
+        "z": -3.133
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring04",
+      "title": "Piston_Ring04",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.5546,
+        "y": 0.1163,
+        "z": 0.037
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring05",
+      "title": "Piston_Ring05",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.5546,
+        "y": 0.1276,
+        "z": 0.037
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring06",
+      "title": "Piston_Ring06",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.5546,
+        "y": 0.1388,
+        "z": 0.037
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring07",
+      "title": "Piston_Ring07",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.4498,
+        "y": 0.1948,
+        "z": 0.04
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring08",
+      "title": "Piston_Ring08",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.4498,
+        "y": 0.2058,
+        "z": 0.04
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring09",
+      "title": "Piston_Ring09",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.4498,
+        "y": 0.2184,
+        "z": 0.04
+      },
+      "vector": {
+        "x": 0.0369,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring10",
+      "title": "Piston_Ring10",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.221,
+        "y": 0.1179,
+        "z": 0.0446
+      },
+      "vector": {
+        "x": -0.0475,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring11",
+      "title": "Piston_Ring11",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.221,
+        "y": 0.13,
+        "z": 0.0446
+      },
+      "vector": {
+        "x": -0.0475,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Piston_Ring12",
+      "title": "Piston_Ring12",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.221,
+        "y": 0.1403,
+        "z": 0.0446
+      },
+      "vector": {
+        "x": -0.0475,
+        "y": 0.0009,
+        "z": -3.1076
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  ]
+}

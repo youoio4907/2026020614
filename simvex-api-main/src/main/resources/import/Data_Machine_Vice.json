@@ -1,0 +1,267 @@
+{
+  "project_name": "SIMVEX_PROJECT",
+  "base_path": "./Integrated 3D Asset/",
+  "integrated_file": "Machine_Vice.glb",
+  "assets": [
+    {
+      "id": "Part1_Fuhrung",
+      "title": "Part1_Fuhrung",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0418,
+        "y": 0.0242,
+        "z": -0.0138
+      },
+      "vector": {
+        "x": -1.571,
+        "y": 0,
+        "z": 3.1416
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part2_Feste_Backe",
+      "title": "Part2_Feste_Backe",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0652,
+        "y": -0.005,
+        "z": -0.0244
+      },
+      "vector": {
+        "x": 0,
+        "y": -1.5705,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part3-lose_backe",
+      "title": "Part3-lose_backe",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.052,
+        "y": 0.0306,
+        "z": -0.0235
+      },
+      "vector": {
+        "x": 0,
+        "y": -1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part4_spindelsockel",
+      "title": "Part4_spindelsockel",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0999,
+        "y": -0.0066,
+        "z": -0.0032
+      },
+      "vector": {
+        "x": 3.1416,
+        "y": -1.57,
+        "z": 3.1416
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part5-Spannbacke",
+      "title": "Part5-Spannbacke",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0471,
+        "y": 0.0295,
+        "z": -0.0256
+      },
+      "vector": {
+        "x": 0,
+        "y": -1.5704,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part6-fuhrungschiene01",
+      "title": "Part6-fuhrungschiene01",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0019,
+        "y": 0.0087,
+        "z": -0.0236
+      },
+      "vector": {
+        "x": -1.5703,
+        "y": 0,
+        "z": -3.1413
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part7-TrapezSpindel",
+      "title": "Part7-TrapezSpindel",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.1699,
+        "y": 0.0355,
+        "z": 0.0145
+      },
+      "vector": {
+        "x": 0,
+        "y": -1.5705,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part8-grundplatte",
+      "title": "Part8-grundplatte",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.1202,
+        "y": -0.0056,
+        "z": -0.0244
+      },
+      "vector": {
+        "x": 1.5709,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part9-Druckhulse01",
+      "title": "Part9-Druckhulse01",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0434,
+        "y": 0.009,
+        "z": -0.0138
+      },
+      "vector": {
+        "x": 1.5707,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part6-fuhrungschiene02",
+      "title": "Part6-fuhrungschiene02",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0521,
+        "y": 0.0089,
+        "z": 0.0514
+      },
+      "vector": {
+        "x": -1.5713,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part9-Druckhulse02",
+      "title": "Part9-Druckhulse02",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0441,
+        "y": 0.0087,
+        "z": 0.044
+      },
+      "vector": {
+        "x": 1.5707,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part9-Druckhulse03",
+      "title": "Part9-Druckhulse03",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0099,
+        "y": 0.009,
+        "z": 0.0434
+      },
+      "vector": {
+        "x": 1.5707,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Part9-Druckhulse04",
+      "title": "Part9-Druckhulse04",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.011,
+        "y": 0.009,
+        "z": -0.0144
+      },
+      "vector": {
+        "x": 1.5707,
+        "y": 0,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    }
+  ]
+}

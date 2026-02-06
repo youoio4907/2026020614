@@ -1,0 +1,387 @@
+{
+  "project_name": "SIMVEX_PROJECT",
+  "base_path": "./Integrated 3D Asset/",
+  "integrated_file": "Robot_Gripper.glb",
+  "assets": [
+    {
+      "id": "BASE_GEAR",
+      "title": "BASE_GEAR",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0073,
+        "y": -0.0027,
+        "z": 0.0176
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Base_Mounting_bracket",
+      "title": "Base_Mounting_bracket",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0101,
+        "y": 0.0028,
+        "z": -0.0054
+      },
+      "vector": {
+        "x": 0,
+        "y": -1.5705,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Base_Plate",
+      "title": "Base_Plate",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "vector": {
+        "x": -1.5708,
+        "y": 0,
+        "z": 3.1416
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": -1,
+        "z": 0
+      }
+    },
+    {
+      "id": "Red_Gear_link",
+      "title": "Red_Gear_link",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0135,
+        "y": 0.0042,
+        "z": 0.0377
+      },
+      "vector": {
+        "x": -3.1416,
+        "y": 0,
+        "z": 1.5708
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Orange_gear_link",
+      "title": "Orange_gear_link",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0136,
+        "y": 0.0056,
+        "z": 0.0377
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 0,
+        "z": 1.4312
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Left_Gripper",
+      "title": "Left_Gripper",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0042,
+        "y": -0.0002,
+        "z": 0.0882
+      },
+      "vector": {
+        "x": -1.5797,
+        "y": -0.0169,
+        "z": -1.8029
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Left_link",
+      "title": "Left_link",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0072,
+        "y": 0.0041,
+        "z": 0.0737
+      },
+      "vector": {
+        "x": 0.0014,
+        "y": 0.1085,
+        "z": -1.5739
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Right_Gripper",
+      "title": "Right_Gripper",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0037,
+        "y": 0.0004,
+        "z": 0.0878
+      },
+      "vector": {
+        "x": 1.5645,
+        "y": 0.0328,
+        "z": 1.3284
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "Right_link",
+      "title": "Right_link",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0068,
+        "y": 0.0043,
+        "z": 0.0737
+      },
+      "vector": {
+        "x": -0.0062,
+        "y": -0.089,
+        "z": -1.5748
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin001",
+      "title": "pin001",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0089,
+        "y": 0.0014,
+        "z": 0.0891
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin002",
+      "title": "pin002",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0084,
+        "y": 0.0016,
+        "z": 0.0891
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin004",
+      "title": "pin004",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0058,
+        "y": 0.0026,
+        "z": 0.0581
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin003",
+      "title": "pin003",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0052,
+        "y": 0.0027,
+        "z": 0.0577
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin007",
+      "title": "pin007",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0134,
+        "y": 0.0028,
+        "z": 0.0374
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin008",
+      "title": "pin008",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0138,
+        "y": 0.0031,
+        "z": 0.0374
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5705,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin006",
+      "title": "pin006",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.0133,
+        "y": 0.0016,
+        "z": 0.0691
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin005",
+      "title": "pin005",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0143,
+        "y": 0.0016,
+        "z": 0.0691
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5708,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin010",
+      "title": "pin010",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": -0.006,
+        "y": 0.0013,
+        "z": 0.004
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5705,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    },
+    {
+      "id": "pin009",
+      "title": "pin009",
+      "desc": "부품 설명을 입력하세요.",
+      "position": {
+        "x": 0.0061,
+        "y": 0.0013,
+        "z": 0.004
+      },
+      "vector": {
+        "x": 1.5708,
+        "y": 1.5705,
+        "z": 0
+      },
+      "explodeVector": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      }
+    }
+  ]
+}
