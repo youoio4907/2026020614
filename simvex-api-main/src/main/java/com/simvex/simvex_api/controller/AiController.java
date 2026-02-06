@@ -12,10 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.HashMap;
 import java.util.Map;
 
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "http://localhost:5173"
-})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 @RestController
 @RequestMapping("/api/ai")
 public class AiController {
@@ -28,38 +25,38 @@ public class AiController {
 
     @PostMapping("/ask")
     public AiAskResponseDto ask(@RequestBody AiAskRequestDto req) {
-        if (req == null || isBlank(req.question)) {
+        if (req == null || req.question == null || req.question.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "question is required");
         }
 
-        Long modelId = req.modelId;
-        String meshName = safeTrim(req.meshName);
-        String question = safeTrim(req.question);
-        String notes = safeTrim(req.notes);
+        // 1. Context 빌드
+        AiContextResult ctx = aiService.buildContext(req.modelId, req.meshName);
 
-        AiContextResult ctx = aiService.buildContext(modelId, meshName);
-        String prompt = aiService.composePrompt(question, ctx.context, notes, ctx.mode);
+        // 2. 프롬프트 생성 (record의 메소드 접근 방식 사용: ctx.partContext())
+        String prompt = aiService.composePrompt(
+                req.question, 
+                ctx.partContext(), 
+                ctx.modelContext(), 
+                ctx.mode()
+        );
 
+        // 3. 답변 생성
         AiService.AiAnswerResult result = aiService.generateAnswer(prompt);
 
-        // meta 확장(기존 테스트/프론트와 호환)
-        Map<String, Object> meta = new HashMap<>();
-        if (ctx.meta != null) meta.putAll(ctx.meta);
+        // 4. 요약 업데이트 (성공 시)
+        if (result.errorCode() == null) {
+            aiService.updateSummary(req.modelId, req.question, result.answer());
+        }
 
-        meta.put("provider", result.provider()); // "openai" | "mock"
+        // 5. 응답
+        Map<String, Object> meta = new HashMap<>();
+        if (ctx.meta() != null) meta.putAll(ctx.meta());
+        meta.put("provider", result.provider());
         if (result.errorCode() != null) {
             meta.put("aiErrorCode", result.errorCode());
             meta.put("aiErrorMessage", result.errorMessage());
         }
 
-        return new AiAskResponseDto(result.answer(), ctx.context, ctx.mode, meta);
-    }
-
-    private boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
-    }
-
-    private String safeTrim(String s) {
-        return s == null ? "" : s.trim();
+        return new AiAskResponseDto(result.answer(), ctx.partContext(), ctx.mode(), meta);
     }
 }
