@@ -32,11 +32,13 @@ public class AiController {
         // 1. Context 빌드
         AiContextResult ctx = aiService.buildContext(req.modelId, req.meshName);
 
-        // 2. 프롬프트 생성 (record의 메소드 접근 방식 사용: ctx.partContext())
+        // 2. 프롬프트 생성
+        // [변경] composePrompt 호출 시 ctx.aiSummary() 추가 전달
         String prompt = aiService.composePrompt(
                 req.question, 
                 ctx.partContext(), 
                 ctx.modelContext(), 
+                ctx.aiSummary(), // <-- 추가됨
                 ctx.mode()
         );
 

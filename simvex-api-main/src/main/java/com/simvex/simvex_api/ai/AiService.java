@@ -33,30 +33,31 @@ public class AiService {
         this.mockAiClient = mockAiClient;
     }
 
-    // 1. 컨텍스트 생성 (AI 요약 정보 추가)
+    // 1. 컨텍스트 생성 (Summary를 별도 필드로 분리)
     public AiContextResult buildContext(Long modelId, String meshName) {
         Map<String, Object> meta = new HashMap<>();
 
-        // (1) Model Info 추출
         String modelContext = "";
+        String aiSummary = "기록된 이전 대화 요약이 없습니다.";
+
+        // (1) Model Info 및 Summary 추출
         if (modelId != null) {
             Optional<ModelEntity> modelOpt = modelRepository.findById(modelId);
             if (modelOpt.isPresent()) {
                 ModelEntity m = modelOpt.get();
-                // [변경] DB에 있는 ai_summary 가져오기 (없으면 "없음")
-                String summary = (m.getAiSummary() != null && !m.getAiSummary().isBlank()) 
-                        ? m.getAiSummary() 
-                        : "아직 요약된 정보가 없습니다.";
+                
+                // [변경] Summary를 modelContext에 섞지 않고 변수에 저장
+                if (m.getAiSummary() != null && !m.getAiSummary().isBlank()) {
+                    aiSummary = m.getAiSummary();
+                }
 
-                // [변경] 프롬프트에 보낼 모델 정보에 요약(Summary) 추가
+                // [변경] Model Context는 순수하게 모델 정보(이름, 설명)만 포함
                 modelContext = """
                         - Model Title: %s
                         - Model Description: %s
-                        - AI Summary (Previous Context): %s
                         """.formatted(
                                 m.getTitle(), 
-                                m.getDescription() != null ? m.getDescription() : "N/A",
-                                summary
+                                m.getDescription() != null ? m.getDescription() : "N/A"
                         );
             }
         }
@@ -66,7 +67,7 @@ public class AiService {
         if (modelId == null || meshName == null || meshName.isBlank()) {
             meta.put("partFound", false);
             partContext = "- (부품이 선택되지 않음, 전체 모델에 대한 질문)";
-            return new AiContextResult("GLOBAL", partContext, modelContext, meta);
+            return new AiContextResult("GLOBAL", partContext, modelContext, aiSummary, meta);
         }
 
         Optional<PartEntity> partOpt = partRepository.findByModel_IdAndMeshName(modelId, meshName);
@@ -74,38 +75,53 @@ public class AiService {
 
         if (partOpt.isPresent()) {
             PartEntity part = partOpt.get();
+            
+            Map<String, Object> content = part.getContent();
+            String title = (content.get("title") != null) ? content.get("title").toString() : meshName;
+            String desc = (content.get("desc") != null) ? content.get("desc").toString() : "설명 없음";
+
             partContext = """
                     - Part Name: %s
-                    - Part Details: %s
-                    """.formatted(meshName, String.valueOf(part.getContent()));
+                    - Part Description: %s
+                    """.formatted(title, desc);
             
-            return new AiContextResult("PART", partContext, modelContext, meta);
+            return new AiContextResult("PART", partContext, modelContext, aiSummary, meta);
         }
 
         partContext = "- 해당 부품(%s) 정보를 찾을 수 없습니다.".formatted(meshName);
-        return new AiContextResult("PART", partContext, modelContext, meta);
+        return new AiContextResult("PART", partContext, modelContext, aiSummary, meta);
     }
 
-    // 2. 프롬프트 합성
-    public String composePrompt(String question, String partContext, String modelContext, String mode) {
+    // 2. [변경] 프롬프트 합성 (이전 기억 + 모델 정보 + 부품 정보 + 질문)
+    // 파라미터에 aiSummary 추가됨
+    public String composePrompt(String question, String partContext, String modelContext, String aiSummary, String mode) {
         return """
-                [MODE] 
+                [Role]
+                You are a knowledgeable technical assistant explaining a 3D model.
+
+                [Instructions]
+                1. Answer the user's [Question] utilizing the provided [Model Info], [Part Info], and [Previous Memory].
+                2. **Synthesize** the information into natural, helpful Korean sentences. Do NOT simply list the provided fields.
+                3. **Inference**: If specific descriptions are missing or marked as "None/설명 없음", **infer** the component's function based on its **name** (e.g., if name is 'Connecting_Rod', explain what a connecting rod does in this context).
+                4. **Avoid Negativity**: Do NOT explicitly state "There is no description" or "I only have this info". Instead, focus on explaining what the part *likely* is or does based on your general knowledge and the part's name.
+                5. **Context**: Use [Previous Memory] as background context but do not quote it directly unless asked.
+                6. Be professional, concise, and helpful.
+
+                [Previous Memory]
                 %s
 
-                [NOTES]
+                [Model Info]
                 %s
 
-                [CONTEXT]
+                [Part Info]
                 %s
 
-                [QUESTION]
+                [Question]
                 %s
-
-                마지막에 안녕이라고 말해줘
-                """.formatted(mode, modelContext, partContext, question);
+                """.formatted(aiSummary, modelContext, partContext, question);
     }
 
-    // 3. 답변 생성
+    // 3. 답변 생성 (변경 없음)
     public AiAnswerResult generateAnswer(String prompt) {
         if (!openAIClient.enabled()) {
             return new AiAnswerResult(mockAiClient.ask(prompt), "mock", null, null);
@@ -121,8 +137,8 @@ public class AiService {
         }
     }
 
-    // 4. [변경] 요약 업데이트 (텍스트 전용 + 비동기 권장)
-    @Async // 이 어노테이션이 있어야 사용자가 답변을 빨리 받습니다.
+    // 4. 요약 업데이트 (변경 없음)
+    @Async
     public void updateSummary(Long modelId, String question, String answer) {
         if (modelId == null || !openAIClient.enabled()) return;
         
@@ -130,7 +146,6 @@ public class AiService {
             modelRepository.findById(modelId).ifPresent(model -> {
                 String oldSummary = model.getAiSummary() == null ? "없음" : model.getAiSummary();
                 
-                // [변경] "순수 텍스트로만" 작성하라는 강력한 지시 추가
                 String prompt = """
                         [Role]
                         You are a manager maintaining the 'Current Status Summary' of a 3D model.
@@ -142,8 +157,8 @@ public class AiService {
                         1. **Do not simply append** the new information. Merge it naturally.
                         2. Remove redundant or outdated information.
                         3. Write in **Korean**.
-                        4. Output **ONLY plain text** (No Markdown, No JSON, No special characters like '#').
-                        5. Keep the total length concise and coherent.
+                        4. Output **ONLY plain text**.
+                        5. Keep the total length concise.
                         
                         [Old Summary]
                         %s
@@ -157,9 +172,7 @@ public class AiService {
                 
                 String newSummary = openAIClient.ask(prompt);
                 if (newSummary != null && !newSummary.isBlank()) {
-                    // 혹시 모를 마크다운 문자 제거 (간단한 후처리)
                     String cleanSummary = newSummary.replaceAll("[#*`]", "").trim();
-                    
                     model.setAiSummary(cleanSummary);
                     modelRepository.save(model);
                 }

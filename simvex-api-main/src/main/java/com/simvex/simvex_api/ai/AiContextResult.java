@@ -8,5 +8,6 @@ public record AiContextResult(
     String mode,          // "GLOBAL" | "PART"
     String partContext,   // 부품 정보 (기존 context)
     String modelContext,  // [신규] 모델 정보 (Title, Description)
+    String aiSummary,
     Map<String, Object> meta
 ) {}
