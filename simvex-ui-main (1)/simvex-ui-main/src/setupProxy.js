@@ -5,7 +5,7 @@ module.exports = function (app) {
   console.log("🟢 setupProxy.js 로드됨!");
 
   app.use(
-    "/api",
+    ["/api", "/assets"],
     createProxyMiddleware({
       target: "http://localhost:8080", // ✅ 여기 중요: /api 붙이면 안 됨
       changeOrigin: true,

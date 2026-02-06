@@ -1,8 +1,9 @@
-// src/main/java/com/simvex/simvex_api/bootstrap/AssetImportService.java
 package com.simvex.simvex_api.model;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simvex.simvex_api.domain.MemoEntity;
+import com.simvex.simvex_api.domain.QuizEntity;
 import com.simvex.simvex_api.part.PartEntity;
 import com.simvex.simvex_api.part.PartRepository;
 import org.springframework.core.io.Resource;
@@ -68,7 +69,74 @@ public class AssetImportService {
                 System.out.println("[IMPORT] 모델 매칭: " + model.getTitle() + " <= " + rawKey);
             }
 
-            // 이 모델의 folderName 은 modelUrl 기준으로 뽑는다 (/assets/3d/Drone/ -> Drone)
+            // --------------------------------------------------------
+            // [신규] 1. 모델 메타데이터 업데이트 (설명, AI요약)
+            // --------------------------------------------------------
+            if (root.containsKey("description")) {
+                model.setDescription(asString(root.get("description")));
+            }
+            if (root.containsKey("ai_summary")) {
+                model.setAiSummary(asString(root.get("ai_summary")));
+            }
+
+            // --------------------------------------------------------
+            // [신규] 2. 퀴즈 데이터 저장
+            // --------------------------------------------------------
+            List<Map<String, Object>> quizzes = asListOfMap(root.get("quizzes"));
+            
+            if (!quizzes.isEmpty() && model.getQuizzes().isEmpty()) {
+                for (Map<String, Object> q : quizzes) {
+                    // 1. 문제 (key: "q" 또는 "question")
+                    String question = firstNonBlank(
+                            asString(q.get("q")), 
+                            asString(q.get("question"))
+                    );
+
+                    // 2. 정답 (key: "ans" 또는 "answer")
+                    int answer = 0;
+                    try {
+                        String ansStr = firstNonBlank(asString(q.get("ans")), asString(q.get("answer")));
+                        answer = Integer.parseInt(ansStr);
+                    } catch (NumberFormatException e) {
+                        answer = 0; // 파싱 실패 시 기본값 0
+                    }
+
+                    // 3. 보기 (key: "opts") -> List<String> 변환
+                    List<String> options = new ArrayList<>();
+                    if (q.get("opts") instanceof List<?> list) {
+                        for (Object o : list) {
+                            options.add(asString(o));
+                        }
+                    }
+
+                    // 4. 해설
+                    String explanation = asString(q.get("explanation"));
+
+                    // Entity 생성 및 추가
+                    model.addQuiz(new QuizEntity(question, answer, options, explanation));
+                }
+            }
+
+            // --------------------------------------------------------
+            // [신규] 3. 메모 데이터 저장
+            // --------------------------------------------------------
+            List<Map<String, Object>> memos = asListOfMap(root.get("memos"));
+            if (!memos.isEmpty() && model.getMemos().isEmpty()) {
+                for (Map<String, Object> m : memos) {
+                    String title = asString(m.get("title"));
+                    String content = asString(m.get("content"));
+                    model.addMemo(new MemoEntity(title, content));
+                }
+            }
+            
+            // 변경된 모델 정보(퀴즈, 메모 포함) 저장
+            modelRepository.save(model);
+
+            // --------------------------------------------------------
+            // [수정] 4. 부품(Assets) 처리 및 경로 버그 수정
+            // --------------------------------------------------------
+            
+            // 이 모델의 folderName 은 modelUrl 기준으로 뽑는다 (/assets/3d/Drone/Drone.glb -> Drone)
             String folderName = extractFolderName(model.getModelUrl(), model.getTitle());
             String fileUrl = "/assets/3d/" + folderName + "/" + integratedFile;
 
@@ -92,8 +160,8 @@ public class AssetImportService {
                 content.put("vector", a.get("vector"));
                 content.put("explodeVector", a.get("explodeVector"));
 
-                // raw 그대로도 남겨두면 추후 확장 쉬움
-                content.put("raw", a);
+                // [삭제] raw 데이터는 용량 문제 및 중복으로 저장하지 않음
+                // content.put("raw", a); 
 
                 // uk_model_mesh(모델+meshName) 기준으로 upsert
                 PartEntity part = findPart(model.getId(), meshName).orElseGet(() ->
@@ -112,7 +180,6 @@ public class AssetImportService {
 
     private Optional<PartEntity> findPart(Long modelId, String meshName) {
         // PartRepository 에 "findByModelIdOrderByIdAsc"만 있으니까, 여기선 전체 가져와서 찾는다.
-        // 데이터 많아지면 PartRepository에 findByModelIdAndMeshName 추가하는 게 맞다.
         return partRepository.findByModelIdOrderByIdAsc(modelId).stream()
                 .filter(p -> meshName.equals(p.getMeshName()))
                 .findFirst();
@@ -127,7 +194,6 @@ public class AssetImportService {
             if (mt.equals(n1) || mt.equals(n2)) return m;
         }
 
-        // modelUrl 에도 폴더명이 들어있으니까 그걸로 한번 더 매칭
         for (ModelEntity m : existing) {
             String folder = extractFolderName(m.getModelUrl(), m.getTitle());
             if (norm(folder).equals(n1) || norm(folder).equals(n2)) return m;
@@ -136,19 +202,34 @@ public class AssetImportService {
         return null;
     }
 
+    // [수정됨] 경로 파싱 로직 개선
     private String extractFolderName(String modelUrl, String fallback) {
-        if (modelUrl == null) return fallback;
-        // /assets/3d/V4_Engine/ -> V4_Engine
+        if (modelUrl == null || modelUrl.isBlank()) return fallback;
+        
         String s = modelUrl;
+
+        // .glb 같은 확장자가 포함된 경우, 파일명 부분을 제거하고 상위 폴더를 찾는다.
+        // 예: /assets/3d/Drone/Drone.glb -> /assets/3d/Drone/
+        if (s.toLowerCase().endsWith(".glb") || s.toLowerCase().endsWith(".gltf")) {
+            int lastSlash = s.lastIndexOf('/');
+            if (lastSlash > 0) {
+                s = s.substring(0, lastSlash); 
+            }
+        }
+
+        // 끝의 슬래시 제거
         if (s.endsWith("/")) s = s.substring(0, s.length() - 1);
+
+        // 마지막 경로(폴더명) 추출
         int idx = s.lastIndexOf('/');
-        if (idx >= 0 && idx < s.length() - 1) return s.substring(idx + 1);
+        if (idx >= 0 && idx < s.length() - 1) {
+            return s.substring(idx + 1);
+        }
         return fallback;
     }
 
     private String norm(String s) {
         if (s == null) return "";
-        // 대소문자/언더스코어/공백/하이픈 제거하고 비교
         return s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
     }
 
