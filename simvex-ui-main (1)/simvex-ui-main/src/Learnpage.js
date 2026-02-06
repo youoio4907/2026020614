@@ -606,7 +606,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                     {!showProductPanel && (
                       <button className="viewer-toggle-btn-side left" onClick={() => setShowProductPanel(true)} title="완제품 개요 보기">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M10 2L4 8l6 6" />
+                          <path d="M6 2l6 6-6 6" />
                         </svg>
                       </button>
                     )}
@@ -653,8 +653,6 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                           </div>
                         </div>
 
-                        
-
                         {selectedModel?.modelUrl ? (
                           <ThreeViewer
                             modelUrl={normalizeModelUrl(selectedModel)}
@@ -668,9 +666,6 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                         )}
                       </div>
                     </div>
-
-                    
-
 
                     {/* 조립/분해 슬라이더 */}
                     <div className="assembly-slider-container">
@@ -772,7 +767,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                     {!showInfoPanel && (
                       <button className="viewer-toggle-btn-side right" onClick={() => setShowInfoPanel(true)} title="부품 설명 보기">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M6 2l6 6-6 6" />
+                          {/*<path d="M6 2l6 6-6 6" />*/}
+                          <path d="M10 2L4 8l6 6" />
                         </svg>
                       </button>
                     )}

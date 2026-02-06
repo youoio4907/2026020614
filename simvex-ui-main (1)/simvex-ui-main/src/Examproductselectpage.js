@@ -13,22 +13,26 @@ const FIELD_TO_MODEL_TITLES = {
 };
 
 /**
- * 제품별 썸네일 SVG 아이콘 (ProductListPage와 동일)
+ * 제품별 썸네일 SVG 아이콘
  */
 const V4EngineIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
     <defs>
-      <linearGradient id="engineGradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="engineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#4a7a9a" />
         <stop offset="100%" stopColor="#7dd3e0" />
       </linearGradient>
     </defs>
-    <rect x="30" y="40" width="60" height="40" rx="4" fill="url(#engineGradExam)" opacity="0.8" />
+    {/* 엔진 블록 */}
+    <rect x="30" y="40" width="60" height="40" rx="4" fill="url(#engineGrad)" opacity="0.8" />
+    {/* 실린더 4개 */}
     <rect x="35" y="25" width="10" height="20" rx="2" fill="#5abcd0" />
     <rect x="50" y="25" width="10" height="20" rx="2" fill="#5abcd0" />
     <rect x="65" y="25" width="10" height="20" rx="2" fill="#5abcd0" />
     <rect x="80" y="25" width="10" height="20" rx="2" fill="#5abcd0" />
+    {/* 배기 파이프 */}
     <rect x="25" y="55" width="70" height="6" rx="3" fill="#3a6a8a" />
+    {/* 크랭크샤프트 */}
     <circle cx="60" cy="90" r="8" fill="#2a5570" stroke="#7dd3e0" strokeWidth="2" />
   </svg>
 );
@@ -36,15 +40,20 @@ const V4EngineIcon = () => (
 const RobotArmIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
     <defs>
-      <linearGradient id="armGradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="armGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#60a5fa" />
         <stop offset="100%" stopColor="#3b82f6" />
       </linearGradient>
     </defs>
-    <rect x="45" y="85" width="30" height="10" rx="2" fill="url(#armGradExam)" />
+    {/* 베이스 */}
+    <rect x="45" y="85" width="30" height="10" rx="2" fill="url(#armGrad)" />
+    {/* 암 세그먼트 1 */}
     <rect x="55" y="55" width="10" height="35" rx="2" fill="#60a5fa" />
+    {/* 조인트 */}
     <circle cx="60" cy="55" r="6" fill="#3b82f6" stroke="#1e40af" strokeWidth="2" />
+    {/* 암 세그먼트 2 */}
     <rect x="60" y="35" width="25" height="8" rx="2" fill="#60a5fa" transform="rotate(-30 60 55)" />
+    {/* 그리퍼 */}
     <path d="M 80 35 L 75 30 M 80 35 L 75 40" stroke="#1e40af" strokeWidth="3" strokeLinecap="round" />
   </svg>
 );
@@ -52,16 +61,20 @@ const RobotArmIcon = () => (
 const RobotGripperIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
     <defs>
-      <linearGradient id="gripperGradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="gripperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#8b5cf6" />
         <stop offset="100%" stopColor="#a78bfa" />
       </linearGradient>
     </defs>
-    <rect x="50" y="40" width="20" height="30" rx="3" fill="url(#gripperGradExam)" />
+    {/* 그리퍼 몸체 */}
+    <rect x="50" y="40" width="20" height="30" rx="3" fill="url(#gripperGrad)" />
+    {/* 왼쪽 핑거 */}
     <rect x="35" y="70" width="8" height="25" rx="2" fill="#a78bfa" />
     <rect x="35" y="70" width="15" height="5" rx="1" fill="#8b5cf6" />
+    {/* 오른쪽 핑거 */}
     <rect x="77" y="70" width="8" height="25" rx="2" fill="#a78bfa" />
     <rect x="70" y="70" width="15" height="5" rx="1" fill="#8b5cf6" />
+    {/* 액추에이터 */}
     <circle cx="60" cy="35" r="8" fill="#6d28d9" stroke="#a78bfa" strokeWidth="2" />
   </svg>
 );
@@ -69,16 +82,21 @@ const RobotGripperIcon = () => (
 const MachineViceIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
     <defs>
-      <linearGradient id="viceGradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="viceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#64748b" />
         <stop offset="100%" stopColor="#94a3b8" />
       </linearGradient>
     </defs>
-    <rect x="20" y="75" width="80" height="15" rx="2" fill="url(#viceGradExam)" />
+    {/* 베이스 */}
+    <rect x="20" y="75" width="80" height="15" rx="2" fill="url(#viceGrad)" />
+    {/* 고정 조 */}
     <rect x="30" y="45" width="12" height="35" rx="2" fill="#64748b" />
+    {/* 이동 조 */}
     <rect x="78" y="45" width="12" height="35" rx="2" fill="#64748b" />
+    {/* 스크류 */}
     <rect x="45" y="55" width="30" height="6" rx="3" fill="#475569" />
     <circle cx="75" cy="58" r="5" fill="#334155" stroke="#94a3b8" strokeWidth="1.5" />
+    {/* 핸들 */}
     <line x1="75" y1="58" x2="90" y2="58" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" />
   </svg>
 );
@@ -86,15 +104,19 @@ const MachineViceIcon = () => (
 const SuspensionIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
     <defs>
-      <linearGradient id="suspGradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="suspGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#f59e0b" />
         <stop offset="100%" stopColor="#fbbf24" />
       </linearGradient>
     </defs>
+    {/* 스프링 */}
     <path d="M 60 30 Q 50 35, 60 40 Q 70 45, 60 50 Q 50 55, 60 60 Q 70 65, 60 70" 
-          stroke="url(#suspGradExam)" strokeWidth="4" fill="none" strokeLinecap="round" />
+          stroke="url(#suspGrad)" strokeWidth="4" fill="none" strokeLinecap="round" />
+    {/* 상단 마운트 */}
     <rect x="50" y="20" width="20" height="8" rx="2" fill="#ea580c" />
+    {/* 하단 마운트 */}
     <rect x="50" y="72" width="20" height="8" rx="2" fill="#ea580c" />
+    {/* 댐퍼 */}
     <rect x="56" y="35" width="8" height="35" rx="2" fill="#92400e" opacity="0.6" />
   </svg>
 );
@@ -102,14 +124,16 @@ const SuspensionIcon = () => (
 const LeafSpringIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
     <defs>
-      <linearGradient id="leafGradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#10b981" />
         <stop offset="100%" stopColor="#34d399" />
       </linearGradient>
     </defs>
-    <path d="M 20 60 Q 60 40, 100 60" stroke="url(#leafGradExam)" strokeWidth="6" fill="none" strokeLinecap="round" />
+    {/* 리프 스프링 레이어들 */}
+    <path d="M 20 60 Q 60 40, 100 60" stroke="url(#leafGrad)" strokeWidth="6" fill="none" strokeLinecap="round" />
     <path d="M 25 62 Q 60 44, 95 62" stroke="#10b981" strokeWidth="5" fill="none" strokeLinecap="round" opacity="0.7" />
     <path d="M 30 64 Q 60 48, 90 64" stroke="#059669" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.5" />
+    {/* 마운트 포인트 */}
     <circle cx="20" cy="60" r="5" fill="#047857" stroke="#34d399" strokeWidth="2" />
     <circle cx="100" cy="60" r="5" fill="#047857" stroke="#34d399" strokeWidth="2" />
   </svg>
@@ -118,20 +142,24 @@ const LeafSpringIcon = () => (
 const DroneIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
     <defs>
-      <linearGradient id="droneGradExam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="droneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#ef4444" />
         <stop offset="100%" stopColor="#f87171" />
       </linearGradient>
     </defs>
-    <rect x="50" y="50" width="20" height="20" rx="3" fill="url(#droneGradExam)" />
+    {/* 중앙 본체 */}
+    <rect x="50" y="50" width="20" height="20" rx="3" fill="url(#droneGrad)" />
+    {/* 암 4개 */}
     <line x1="60" y1="60" x2="30" y2="30" stroke="#dc2626" strokeWidth="3" />
     <line x1="60" y1="60" x2="90" y2="30" stroke="#dc2626" strokeWidth="3" />
     <line x1="60" y1="60" x2="30" y2="90" stroke="#dc2626" strokeWidth="3" />
     <line x1="60" y1="60" x2="90" y2="90" stroke="#dc2626" strokeWidth="3" />
+    {/* 프로펠러 */}
     <circle cx="30" cy="30" r="8" fill="#991b1b" opacity="0.3" />
     <circle cx="90" cy="30" r="8" fill="#991b1b" opacity="0.3" />
     <circle cx="30" cy="90" r="8" fill="#991b1b" opacity="0.3" />
     <circle cx="90" cy="90" r="8" fill="#991b1b" opacity="0.3" />
+    {/* 모터 */}
     <circle cx="30" cy="30" r="4" fill="#7f1d1d" />
     <circle cx="90" cy="30" r="4" fill="#7f1d1d" />
     <circle cx="30" cy="90" r="4" fill="#7f1d1d" />
@@ -141,21 +169,21 @@ const DroneIcon = () => (
 
 const PRODUCT_ICONS = {
   "V4_Engine": V4EngineIcon,
-  "Robot Arm": RobotArmIcon,
-  "Robot Gripper": RobotGripperIcon,
-  "Machine Vice": MachineViceIcon,
+  "Robot_Arm": RobotArmIcon,
+  "Robot_Gripper": RobotGripperIcon,
+  "Machine_Vice": MachineViceIcon,
   "Suspension": SuspensionIcon,
-  "Leaf Spring": LeafSpringIcon,
+  "Leaf_Spring": LeafSpringIcon,
   "Drone": DroneIcon,
 };
 
 const PRODUCT_DESCRIPTIONS = {
   "V4_Engine": "4기통 엔진의 구조와 작동 원리를 학습하세요",
-  "Robot Arm": "산업용 로봇 팔의 관절과 움직임을 탐구하세요",
-  "Robot Gripper": "정밀 그리퍼의 메커니즘을 이해하세요",
-  "Machine Vice": "공작물 고정 장치의 원리를 배워보세요",
+  "Robot_Arm": "산업용 로봇 팔의 관절과 움직임을 탐구하세요",
+  "Robot_Gripper": "정밀 그리퍼의 메커니즘을 이해하세요",
+  "Machine_Vice": "공작물 고정 장치의 원리를 배워보세요",
   "Suspension": "자동차 서스펜션 시스템을 분석하세요",
-  "Leaf Spring": "판 스프링의 탄성 원리를 학습하세요",
+  "Leaf_Spring": "판 스프링의 탄성 원리를 학습하세요",
   "Drone": "드론의 비행 메커니즘을 탐구하세요",
 };
 
