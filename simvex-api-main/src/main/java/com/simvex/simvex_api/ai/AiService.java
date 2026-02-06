@@ -91,7 +91,7 @@ public class AiService {
                 [QUESTION]
                 %s
 
-                "마지막에 안녕이라고 말해줘"
+                마지막에 안녕이라고 말해줘
 
                 """.formatted(mode, notes, context, question);
     }
