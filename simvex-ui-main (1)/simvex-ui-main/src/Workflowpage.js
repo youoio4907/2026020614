@@ -3,7 +3,7 @@ import "./Shared.css";
 import "./Workflowpage.css";
 
 /* ════════════════════════════════════════════ */
-/* WorkflowPage (Final Complete Version)        */
+/* WorkflowPage (Design Restored + API)        */
 /* ════════════════════════════════════════════ */
 export default function WorkflowPage({ onHome, onStudy, onTest }) {
   const [activeNav, setActiveNav] = useState("Lab");
@@ -82,7 +82,7 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
   /* ── 노드 드래그 시작 ── */
   const handleNodeMouseDown = (e, node) => {
     if (e.target.classList.contains("wf-anchor")) return;
-    // 버튼이나 파일 관련 요소 클릭 시 드래그 방지
+    // [중요] 버튼이나 파일 관련 요소 클릭 시 드래그 방지
     if (e.target.closest("button") || e.target.closest(".wf-node-attach") || e.target.closest(".wf-file-row")) return;
     
     e.stopPropagation();
@@ -162,7 +162,7 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
     setConnectingFrom(null);
     setConnectingMouse(null);
     setIsPanning(false);
-  }, [draggingNode, nodes]);
+  }, [draggingNode, nodes, connectingFrom]);
 
   /* ── 줌/팬 ── */
   const handleCanvasWheel = (e) => {
@@ -181,9 +181,18 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
 
   const handleCanvasMouseDown = (e) => {
     if (e.target === canvasRef.current || e.target.classList.contains("wf-canvas-inner")) {
+      
+      // [수정됨] 편집 중인 상태에서 바탕화면을 눌렀다면 -> 먼저 저장 실행!
+      if (editingNode) {
+        const node = nodes.find(n => n.id === editingNode);
+        if (node) {
+            saveNodeData(node); // 강제 저장
+        }
+      }
+
       setIsPanning(true);
       setPanStart({ x: e.clientX, y: e.clientY });
-      setEditingNode(null);
+      setEditingNode(null); // 그 다음 편집 모드 해제
     }
   };
 
@@ -219,6 +228,14 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
       .catch(err => alert("삭제 중 오류가 발생했습니다."));
   };
 
+  /* ── 연결선 삭제 ── */
+  const handleConnectionClick = (conn) => {
+    if(window.confirm('연결을 삭제하시겠습니까?')){
+        fetch(`${API_BASE}/connections?from=${conn.from}&to=${conn.to}`, { method: 'DELETE' })
+          .then(() => setConnections(prev => prev.filter(c => c.id !== conn.id)));
+    }
+  };
+
   /* ── 내용 수정 ── */
   const handleTitleChange = (id, val) => setNodes(prev => prev.map(n => n.id === id ? { ...n, title: val } : n));
   const handleContentChange = (id, val) => setNodes(prev => prev.map(n => n.id === id ? { ...n, content: val } : n));
@@ -237,17 +254,16 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
     const formData = new FormData();
     formData.append("file", file);
     fetch(`${API_BASE}/nodes/${nodeId}/files`, { method: "POST", body: formData })
-      .then(() => fetchWorkflowData()); // 업로드 후 데이터 갱신
+      .then(() => fetchWorkflowData());
   };
 
   const handleFileDelete = (e, fileId) => {
     e.stopPropagation();
     if (!window.confirm("파일을 삭제하시겠습니까?")) return;
-
     fetch(`${API_BASE}/files/${fileId}`, { method: "DELETE" })
       .then(res => {
         if (!res.ok) throw new Error("파일 삭제 실패");
-        fetchWorkflowData(); // 삭제 후 데이터 갱신
+        fetchWorkflowData();
       })
       .catch(err => alert("파일 삭제 중 오류가 발생했습니다."));
   };
@@ -257,7 +273,6 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
     const fileUrl = `http://localhost:8080${file.url}`;
     const fileExt = file.fileName.split('.').pop().toLowerCase();
     
-    // 이미지나 PDF인 경우 미리보기
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(fileExt)) {
       e.preventDefault();
       setPreviewFile({ url: fileUrl, type: fileExt === 'pdf' ? 'pdf' : 'image', name: file.fileName });
@@ -284,9 +299,7 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
           <div className="wf-modal-content" onClick={e => e.stopPropagation()}>
             <div className="wf-modal-header">
               <span>{previewFile.name}</span>
-              <button className="wf-modal-close" onClick={() => setPreviewFile(null)}>
-                뒤로가기
-              </button>
+              <button className="wf-modal-close" onClick={() => setPreviewFile(null)}>뒤로가기</button>
             </div>
             <div className="wf-modal-body">
               {previewFile.type === 'pdf' ? (
@@ -302,7 +315,14 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
       <div className="page-wrapper">
         <nav className="nav">
           <div className="inner">
-            <div className="nav-logo" onClick={onHome}><span className="nav-logo-text">SIMVEX LAB</span></div>
+            <div className="nav-logo" onClick={onHome}>
+              <div className="nav-logo-icon">
+                <svg viewBox="0 0 18 18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="9" cy="9" r="3" /><path d="M9 2v2M9 14v2M2 9h2M14 9h2" />
+                </svg>
+              </div>
+              <span className="nav-logo-text">SIMVEX</span>
+            </div>
             <div className="nav-links">
               {navItems.map(item => (
                 <button key={item} className={`nav-link${activeNav === item ? " active" : ""}`} onClick={() => handleNav(item)}>{item}</button>
@@ -336,14 +356,9 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
                           d={`M${p1.x},${p1.y} C${midX},${p1.y} ${midX},${p2.y} ${p2.x},${p2.y}`}
                           stroke="transparent" strokeWidth="12" fill="none"
                           style={{ cursor: "pointer", pointerEvents: "all" }}
-                          onClick={() => {
-                             if(window.confirm('연결을 삭제하시겠습니까?')){
-                                 fetch(`${API_BASE}/connections?from=${conn.from}&to=${conn.to}`, { method: 'DELETE' })
-                                   .then(() => setConnections(prev => prev.filter((_, idx) => idx !== i)));
-                             }
-                          }}
+                          onClick={() => handleConnectionClick(conn)}
                         />
-                        <path d={`M${p1.x},${p1.y} C${midX},${p1.y} ${midX},${p2.y} ${p2.x},${p2.y}`} stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" style={{ pointerEvents: "none" }} />
+                        <path d={`M${p1.x},${p1.y} C${midX},${p1.y} ${midX},${p2.y} ${p2.x},${p2.y}`} stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" className="wf-connection-line" style={{ pointerEvents: "none" }} />
                       </g>
                     );
                   })}
@@ -372,24 +387,31 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
 
                     <div className="wf-node-header">
                       {editingNode === node.id ? (
-                        <input className="wf-node-title-input" value={node.title} onChange={(e) => handleTitleChange(node.id, e.target.value)} onBlur={() => saveNodeData(node)} autoFocus />
+                        <input className="wf-node-title-input" value={node.title} onChange={(e) => handleTitleChange(node.id, e.target.value)} onBlur={() => saveNodeData(node)} autoFocus onClick={(e) => e.stopPropagation()} />
                       ) : (
                         <div className="wf-node-title">{node.title}</div>
                       )}
                       <div className="wf-node-actions">
+                        {/* 디자인 유지 + 기능 추가: label로 변경하여 input file 트리거 */}
                         <label className="wf-node-attach" onClick={(e) => e.stopPropagation()}>
                             <input type="file" style={{display:'none'}} onChange={(e) => handleFileUpload(e, node.id)} />
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="6" y1="2" x2="6" y2="10"/><line x1="2" y1="6" x2="10" y2="6"/></svg>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                              <line x1="6" y1="2" x2="6" y2="10"/>
+                              <line x1="2" y1="6" x2="10" y2="6"/>
+                            </svg>
                         </label>
                         <button className="wf-node-delete" onClick={(e) => handleDeleteNode(e, node.id)}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                              <line x1="2" y1="2" x2="10" y2="10"/>
+                              <line x1="10" y1="2" x2="2" y2="10"/>
+                            </svg>
                         </button>
                       </div>
                     </div>
 
                     <div className="wf-node-body">
                       {editingNode === node.id ? (
-                        <textarea className="wf-node-content-input" value={node.content || ""} onChange={(e) => handleContentChange(node.id, e.target.value)} onBlur={() => saveNodeData(node)} />
+                        <textarea className="wf-node-content-input" value={node.content || ""} onChange={(e) => handleContentChange(node.id, e.target.value)} onBlur={() => saveNodeData(node)} onClick={(e) => e.stopPropagation()} />
                       ) : (
                         <div className="wf-node-content-text">
                             {node.content || "내용 없음"}
@@ -425,7 +447,22 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
                 ))}
               </div>
             </div>
-            <button className="wf-add-btn" onClick={addNode}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg></button>
+
+            <div className="wf-help">
+              <div className="wf-help-title">워크플로우 에디터</div>
+              <div className="wf-help-item">• 노드를 드래그하여 이동할 수 있습니다</div>
+              <div className="wf-help-item">• 주황색 점을 드래그하여 노드를 연결하세요</div>
+              <div className="wf-help-item">• 우측 상단 + 버튼으로 새 노드를 추가할 수 있습니다</div>
+              <div className="wf-help-item">• 마우스 휠로 줌 인/아웃이 가능합니다</div>
+            </div>
+
+            <button className="wf-add-btn" onClick={addNode}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+
           </div>
         </section>
       </div>
