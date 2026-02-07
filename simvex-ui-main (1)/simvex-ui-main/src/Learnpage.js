@@ -2,14 +2,14 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import "./Shared.css";
 import "./Learnpage.css";
 
-// pdf generation libraries, npm install jspdf html2canvas 입력 필요 -> CDN으로 대체
+// pdf generation libraries (CDN 사용 시 주석 유지)
 //import jsPDF from "jspdf";
 //import html2canvas from "html2canvas";
 
 import ThreeViewer from "./ThreeViewer";
 
 /* ════════════════════════════════════════════ */
-/*  부품 SVG 아이콘들                             */
+/* 부품 SVG 아이콘들 (기존 디자인 유지)           */
 /* ════════════════════════════════════════════ */
 
 const PartFan = () => (
@@ -90,7 +90,7 @@ const PartCase = () => (
 );
 const PART_ICONS = [PartFan, PartCompressor, PartCombustor, PartTurbine, PartNozzle, PartCase];
 
-/* 3D 뷰어 SVG */
+/* 3D 뷰어 대체 SVG */
 const ViewerEngineSVG = () => (
   <svg viewBox="0 0 380 300" fill="none">
     <circle cx="190" cy="150" r="50" fill="#4a7a9a" />
@@ -100,75 +100,39 @@ const ViewerEngineSVG = () => (
   </svg>
 );
 
-const PRODUCT_INFO = {
-  title: "제트 엔진 — 완제품 개요",
-  desc: "제트 엔진은 가스 터빈 원리를 이용한 항공기 추진 장치로, 공기를 흡입→압축→연소→배기하는 순환 구조입니다.",
-  sections: [
-    { title: "작동 원리", desc: "브레이톤 순환(Brayton Cycle)을 기반으로 작동합니다." },
-    { title: "주요 적용 분야", desc: "상업 항공기, 군용 전투기 등에 사용됩니다." },
-  ],
-};
-
-const difficultyPercent = 72; // 0~100
-
-
-const QUIZ_DATA = [
-  { 
-    question: "제트 엔진의 주요 구성 요소가 아닌 것은?", 
-    options: ["압축기", "연소실", "터빈", "프로펠러"], 
-    answer: 3 
-  },
-  { 
-    question: "압축기의 주요 역할은 무엇인가?", 
-    options: ["공기를 냉각", "공기를 고압으로 압축", "연료를 분사", "배기가스 배출"], 
-    answer: 1 
-  },
-  { 
-    question: "제트 엔진의 작동 원리는?", 
-    options: ["카르노 사이클", "브레이톤 사이클", "랭킨 사이클", "오토 사이클"], 
-    answer: 1 
-  },
-  { 
-    question: "터빈의 주요 기능은?", 
-    options: ["연료 연소", "공기 흡입", "압축기 구동", "추력 발생"], 
-    answer: 2 
-  },
-  { 
-    question: "노즐에서 발생하는 것은?", 
-    options: ["압축 공기", "고온 가스", "추진력", "냉각수"], 
-    answer: 2 
-  }
-];
-
-const INIT_MEMOS = [];
-
 /* ════════════════════════════════════════════ */
-/*  LearnPage                                   */
+/* LearnPage                                   */
 /* ════════════════════════════════════════════ */
 export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTest, onBack }) {
   const [activeNav, setActiveNav] = useState("Study");
   const [activeTab, setActiveTab] = useState("조립품");
 
-  /* ✅ 부품 관련 상태 */
+  /* ✅ DB 데이터 상태 */
+  // fullModel: DB의 모델 정보 (description 등)
+  const [fullModel, setFullModel] = useState(selectedModel || {}); 
   const [parts, setParts] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
+  const [memos, setMemos] = useState([]);
+
+  /* 로딩/에러 상태 */
   const [partsLoading, setPartsLoading] = useState(false);
   const [partsErr, setPartsErr] = useState("");
+  
+  /* UI 상태 */
   const [selectedPartKey, setSelectedPartKey] = useState(null);
-
-  /* ✅ 조립/분해 슬라이더 */
   const [assemblyProgress, setAssemblyProgress] = useState(0); // 0 = 완전 조립, 100 = 완전 분해
-
   const [showInfoPanel, setShowInfoPanel] = useState(true);
   const [showProductPanel, setShowProductPanel] = useState(true);
-  const [memos, setMemos] = useState(INIT_MEMOS);
   const [expandedMemo, setExpandedMemo] = useState(null);
+
+  /* 퀴즈 상태 */
   const [quizIdx, setQuizIdx] = useState(0);
   const [quizSelected, setQuizSelected] = useState(null);
   const [quizResults, setQuizResults] = useState([]);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  /* ── AI 채팅 ── */
+  /* AI 채팅 */
   const [chatMsgs, setChatMsgs] = useState([{ role: "ai", text: "안녕하세요! 궁금한 점이 있으신가요?" }]);
   const [chatInput, setChatInput] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -177,7 +141,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   const navItems = ["Home", "Study", "CAD", "Lab", "Test"];
   const tabs = ["조립품", "퀴즈"];
 
-  /* 드래그 스크롤 */
+  /* 드래그 스크롤 (메모장) */
   const scrollRef = useRef(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
@@ -189,18 +153,99 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     startX.current = e.pageX - scrollRef.current.offsetLeft;
     scrollLeft.current = scrollRef.current.scrollLeft;
   }, []);
-  const onMouseLeave = useCallback(() => {
-    isDragging.current = false;
-  }, []);
-  const onMouseUp = useCallback(() => {
-    isDragging.current = false;
-  }, []);
+  const onMouseLeave = useCallback(() => { isDragging.current = false; }, []);
+  const onMouseUp = useCallback(() => { isDragging.current = false; }, []);
   const onMouseMove = useCallback((e) => {
     if (!isDragging.current) return;
     e.preventDefault();
     scrollRef.current.scrollLeft = scrollLeft.current - (e.pageX - scrollRef.current.offsetLeft - startX.current);
   }, []);
 
+  /* ✅ 초기 데이터 로드 (DB 연동) */
+  useEffect(() => {
+    if (!selectedModel?.id) return;
+
+    // 1. 모델 상세 정보 가져오기 (설명 등)
+    fetch(`/api/models/${selectedModel.id}`)
+      .then(res => res.ok ? res.json() : {})
+      .then(data => setFullModel(prev => ({ ...prev, ...data })))
+      .catch(err => console.error("모델 정보 로드 실패:", err));
+
+    // 2. 부품 목록 가져오기
+    setPartsLoading(true);
+    setPartsErr("");
+    fetch(`/api/models/${selectedModel.id}/parts`)
+      .then(res => res.json())
+      .then(data => {
+        const loadedParts = Array.isArray(data) ? data : [];
+        setParts(loadedParts);
+        // 첫 부품 자동 선택
+        if (loadedParts.length > 0) setSelectedPartKey(getPartKey(loadedParts[0]));
+      })
+      .catch(e => {
+        setPartsErr("부품 로드 실패");
+        setParts([]);
+      })
+      .finally(() => setPartsLoading(false));
+
+    // 3. 퀴즈 목록 가져오기
+    fetch(`/api/models/${selectedModel.id}/quizzes`)
+      .then(res => res.json())
+      .then(data => setQuizzes(Array.isArray(data) ? data : []))
+      .catch(err => console.error("퀴즈 로드 실패:", err));
+
+    // 4. 메모 목록 가져오기
+    fetch(`/api/models/${selectedModel.id}/memos`)
+      .then(res => res.json())
+      .then(data => setMemos(Array.isArray(data) ? data : []))
+      .catch(err => console.error("메모 로드 실패:", err));
+
+  }, [selectedModel]);
+
+  /* ✅ 메모장 CRUD (DB 연동) */
+  const addMemo = async () => {
+    if (!selectedModel?.id) return;
+    try {
+      const res = await fetch(`/api/models/${selectedModel.id}/memos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "", content: "" })
+      });
+      if (res.ok) {
+        const newMemo = await res.json();
+        setMemos(prev => [...prev, newMemo]);
+      }
+    } catch (e) { console.error("메모 추가 실패", e); }
+  };
+
+  const updateMemoLocal = (idx, field, val) => {
+    setMemos(prev => prev.map((m, i) => (i === idx ? { ...m, [field]: val } : m)));
+  };
+
+  // 포커스 해제(onBlur) 시 DB 저장
+  const saveMemoToDb = async (memo) => {
+    if (!memo.id) return;
+    try {
+      await fetch(`/api/memos/${memo.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: memo.title, content: memo.content })
+      });
+    } catch (e) { console.error("메모 저장 실패", e); }
+  };
+
+  const deleteMemo = async (idx) => {
+    const target = memos[idx];
+    if (target.id) {
+      try {
+        await fetch(`/api/memos/${target.id}`, { method: "DELETE" });
+      } catch (e) { console.error("메모 삭제 실패", e); }
+    }
+    setMemos(prev => prev.filter((_, i) => i !== idx));
+    if (expandedMemo === idx) setExpandedMemo(null);
+  };
+
+  /* 퀴즈 로직 */
   const resetQuiz = () => {
     setQuizIdx(0);
     setQuizSelected(null);
@@ -213,11 +258,24 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     if (t === "퀴즈") resetQuiz();
   };
 
+  const submitQuiz = () => {
+    if (!quizzes[quizIdx]) return;
+    setQuizSubmitted(true);
+    const correct = quizzes[quizIdx].answer === quizSelected;
+    setQuizResults((prev) => [...prev, { question: quizzes[quizIdx].question, correct }]);
+  };
+  const nextQuestion = () => {
+    if (quizIdx < quizzes.length - 1) {
+      setQuizIdx(quizIdx + 1);
+      setQuizSelected(null);
+      setQuizSubmitted(false);
+    } else {
+      setQuizFinished(true);
+    }
+  };
+
   const handleNav = (item) => {
-      if (item === "CAD") {
-    alert("페이지 준비중입니다");
-    return;
-  }
+    if (item === "CAD") { alert("페이지 준비중입니다"); return; }
     setActiveNav(item);
     if (item === "Home") onHome();
     if (item === "Study") onStudy();
@@ -225,146 +283,53 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     if (item === "Test") onTest?.();
   };
 
-  /* ✅ 부품 키 생성 (안정적 선택) */
+  /* 헬퍼 함수 */
   const getPartKey = (part) => {
     if (part?.id) return `id:${part.id}`;
     if (part?.meshName) return `mesh:${part.meshName}`;
     return null;
   };
-
-  /* ✅ 선택된 부품 계산 */
   const selectedPart = parts.find((p) => getPartKey(p) === selectedPartKey) || parts[0] || null;
 
-  /* ✅ modelUrl 정규화 함수 */
+  /* modelUrl 정규화 */
   const normalizeModelUrl = (selectedModel) => {
     if (!selectedModel?.modelUrl) return null;
     let modelUrl = selectedModel.modelUrl;
-
-    console.log("[Learnpage] normalizeModelUrl called:");
-    console.log("  - selectedModel.title:", selectedModel.title);
-    console.log("  - selectedModel.modelUrl:", modelUrl);
-
-    // 공백을 언더스코어로 변환 (파일 시스템 호환)
     const safeTitle = selectedModel.title.replace(/ /g, "_");
-    console.log("  - safeTitle (공백→_):", safeTitle);
-
     let result;
-
-    // URL 디코딩 (Robot%20Arm → Robot Arm → Robot_Arm)
     if (modelUrl.includes("%20")) {
-      modelUrl = decodeURIComponent(modelUrl);
-      modelUrl = modelUrl.replace(/ /g, "_");
-      console.log("  - URL decoded & space fixed:", modelUrl);
+      modelUrl = decodeURIComponent(modelUrl).replace(/ /g, "_");
     }
-
-    // 절대 경로인 경우
     if (modelUrl.startsWith("/") || modelUrl.startsWith("http")) {
       result = modelUrl;
-
-      // 경로가 폴더로 끝나면 (/) 파일명 추가
-      if (result.endsWith("/")) {
-        result = `${result}${safeTitle}.glb`;
-        console.log("  - Added filename:", result);
-      }
-
-      console.log("  → Final absolute path:", result);
+      if (result.endsWith("/")) result = `${result}${safeTitle}.glb`;
     } else {
-      // 상대 경로인 경우
       result = `/assets/3d/${safeTitle}/${modelUrl}`;
-      console.log("  → Combined path:", result);
     }
-
     return result;
   };
 
-  /* ✅ 부품 로드 (모델 변경 시) */
-  useEffect(() => {
-    let ignore = false;
-
-    (async () => {
-      if (!selectedModel?.id) {
-        setParts([]);
-        setPartsErr("");
-        return;
-      }
-
-      setPartsLoading(true);
-      setPartsErr("");
-      try {
-        const res = await fetch(`/api/models/${selectedModel.id}/parts`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!ignore) {
-          const loadedParts = Array.isArray(data) ? data : [];
-          setParts(loadedParts);
-
-          // 첫 부품 자동 선택
-          if (loadedParts.length > 0) {
-            setSelectedPartKey(getPartKey(loadedParts[0]));
-          } else {
-            setSelectedPartKey(null);
-          }
-        }
-      } catch (e) {
-        if (!ignore) {
-          setPartsErr(e.message || "부품 목록 로드 실패");
-          setParts([]);
-        }
-      } finally {
-        if (!ignore) setPartsLoading(false);
-      }
-    })();
-
-    return () => {
-      ignore = true;
-    };
-  }, [selectedModel?.id]);
-
-  /* ✅ 채팅 스크롤 하단 고정 */
+  /* 채팅 스크롤 */
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMsgs, isAiLoading]);
 
-  /* ✅ AI 요청 (슬림 notes) */
+  /* AI 요청 */
   const sendChat = async () => {
     const question = chatInput.trim();
     if (!question || isAiLoading) return;
 
     setChatInput("");
-    const userMsg = { role: "user", text: question };
-    setChatMsgs((prev) => [...prev, userMsg]);
+    setChatMsgs((prev) => [...prev, { role: "user", text: question }]);
     setIsAiLoading(true);
 
     try {
-      if (!selectedModel?.id) {
-        throw new Error("선택된 모델이 없습니다.");
-      }
-
-      const meshName = selectedPart?.meshName || selectedModel?.title || selectedModel?.modelUrl || null;
-
+      if (!selectedModel?.id) throw new Error("선택된 모델이 없습니다.");
+      const meshName = selectedPart?.meshName || selectedModel?.title || null;
+      
       const notesObj = {
-        model: {
-          id: selectedModel.id,
-          title: selectedModel.title,
-          modelUrl: selectedModel.modelUrl,
-        },
-        part: selectedPart
-          ? {
-              id: selectedPart.id,
-              meshName: selectedPart.meshName,
-              name: selectedPart.name || selectedPart.title,
-              type: selectedPart.type,
-              description: selectedPart.description || selectedPart.desc,
-              function: selectedPart.function,
-              material: selectedPart.material,
-              structure: selectedPart.structure,
-              fileUrl: selectedPart.fileUrl || selectedPart.content?.fileUrl,
-            }
-          : null,
-        ui: {
-          activeTab,
-          assemblyProgress,
-        },
+        model: { id: selectedModel.id, title: selectedModel.title },
+        part: selectedPart ? { name: selectedPart.meshName, ...selectedPart.content } : null,
       };
 
       const payload = {
@@ -380,66 +345,33 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status} ${text}`.trim());
-      }
-
-      const data = await res.json().catch(() => null);
-      const answer = (data && (data.answer || data.message || data.content)) || (typeof data === "string" ? data : null) || "응답 파싱 실패";
-
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const answer = data.answer || data.message || "응답 없음";
       setChatMsgs((prev) => [...prev, { role: "ai", text: answer }]);
     } catch (err) {
-      setChatMsgs((prev) => [...prev, { role: "ai", text: `오류: ${err.message || "요청 실패"}` }]);
+      setChatMsgs((prev) => [...prev, { role: "ai", text: `오류: ${err.message}` }]);
     } finally {
       setIsAiLoading(false);
     }
   };
 
-  /* 메모장 */
-  const addMemo = () => setMemos((prev) => [...prev, { title: "", content: "" }]);
-  const deleteMemo = (idx) => {
-    setMemos((prev) => prev.filter((_, i) => i !== idx));
-    if (expandedMemo === idx) setExpandedMemo(null);
-  };
-  const updateMemo = (idx, field, val) => {
-    setMemos((prev) => prev.map((m, i) => (i === idx ? { ...m, [field]: val } : m)));
-  };
-
-  /* 퀴즈 */
-  const submitQuiz = () => {
-    setQuizSubmitted(true);
-    const correct = QUIZ_DATA[quizIdx].answer === quizSelected;
-    setQuizResults((prev) => [...prev, { question: QUIZ_DATA[quizIdx].question, correct }]);
-  };
-  const nextQuestion = () => {
-    if (quizIdx < QUIZ_DATA.length - 1) {
-      setQuizIdx(quizIdx + 1);
-      setQuizSelected(null);
-      setQuizSubmitted(false);
-    } else {
-      setQuizFinished(true);
-    }
-  };
-
-  /* ✅ 부품 선택 핸들러 */
   const handlePartSelect = (part) => {
     setSelectedPartKey(getPartKey(part));
   };
-
-  /* ✅ PDF 리포트 생성 */
+  /* ✅ PDF 리포트 생성 (자동 페이지 나누기 포함) */
   const generatePdfReport = async () => {
 
     if (!window.jspdf || !window.html2canvas) {
-      alert("PDF 생성 라이브러리(CDN)가 로드되지 않았습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+      alert("PDF 생성 라이브러리가 로드되지 않았습니다.");
       return;
     }
 
     const reportElement = document.getElementById("hidden-pdf-report");
-    const viewerElement = document.querySelector(".viewer-3d"); // 📸 캡처할 화면 영역 (3D 뷰어)
+    const viewerElement = document.querySelector(".viewer-3d"); 
 
     if (!reportElement || !viewerElement) {
-      alert("필요한 요소를 찾을 수 없습니다.");
+      alert("리포트 생성을 위한 요소를 찾을 수 없습니다.");
       return;
     }
 
@@ -447,37 +379,60 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     if(btn) btn.innerText = "이미지 캡처 중...";
 
     try {
-      // 📸 [1단계] 현재 화면(3D 뷰어)을 먼저 캡처
+      // 1. 3D 뷰어 화면 캡처
       const screenCanvas = await window.html2canvas(viewerElement, {
         useCORS: true,
-        backgroundColor: "#151e2a" // 뷰어 배경색과 비슷하게 설정 (선택사항)
+        backgroundColor: "#151e2a"
       });
       const screenImgData = screenCanvas.toDataURL("image/png");
 
-      // 📸 [2단계] 캡처한 이미지를 숨겨진 리포트 안의 img 태그에 주입
+      // 2. 캡처한 이미지를 리포트 템플릿에 넣기
       const reportImgTag = document.getElementById("report-screenshot-img");
       if (reportImgTag) {
         reportImgTag.src = screenImgData;
       }
 
+      // 이미지 로딩을 위해 잠시 대기 (안정성 확보)
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       if(btn) btn.innerText = "PDF 생성 중...";
 
-      // 📄 [3단계] 이미지가 들어간 리포트를 캡처하여 PDF 생성
+      // 3. 리포트 전체 캡처 및 PDF 생성 (페이지 나누기 로직 적용)
       const canvas = await window.html2canvas(reportElement, {
-        scale: 2,
+        scale: 2, // 해상도 2배 (선명하게)
         useCORS: true,
         backgroundColor: "#ffffff"
       });
 
       const imgData = canvas.toDataURL("image/png");
-      const { jsPDF } = window.jspdf; 
-      const pdf = new jsPDF("p", "mm", "a4");
+      const { jsPDF } = window.jspdf;
+      
+      // A4 크기 (mm)
+      const imgWidth = 210; 
+      const pageHeight = 297; 
+      
+      // 캔버스 높이를 A4 비율에 맞춰 mm로 변환
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      let heightLeft = imgHeight;
+      let position = 0;
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      const doc = new jsPDF('p', 'mm', 'a4');
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
-      pdf.save(`SIMVEX_Report_${selectedModel?.title || "Study"}.pdf`);
+      // 첫 페이지 출력
+      doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // 내용이 남았다면 페이지 추가하며 계속 출력
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight; // 다음 페이지 시작 위치 계산 (음수 좌표로 이동)
+        doc.addPage();
+        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // 파일 저장
+      doc.save(`SIMVEX_Report_${selectedModel?.title || "Study"}.pdf`);
 
     } catch (err) {
       console.error("PDF 생성 실패:", err);
@@ -485,6 +440,51 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     } finally {
       if(btn) btn.innerText = "PDF 리포트 생성";
     }
+  };
+
+  /* 부품 상세 렌더링 (DB content JSON 파싱) */
+  const renderPartDetail = () => {
+    // DB 데이터가 없을 때 표시할 기본 UI
+    if (!selectedPart || !selectedPart.content) {
+      return <div className="viewer-no-data" style={{color:"#aaa", padding:"20px"}}>부품 정보가 없습니다.</div>;
+    }
+    
+    // content = { description, function, material, structure ... }
+    const { description, function: func, material, structure } = selectedPart.content;
+
+    return (
+      <div className="viewer-part-detail-new">
+        {/* 부품 이름 */}
+        <div className="part-section-header" style={{ fontSize:"18px", fontWeight:"bold", marginBottom:"15px", color:"#fff" }}>
+          {selectedPart.meshName}
+        </div>
+
+        {description && (
+          <div className="part-section">
+            <div className="part-section-title">개요</div>
+            <div className="part-section-content">{description}</div>
+          </div>
+        )}
+        {func && (
+          <div className="part-section">
+            <div className="part-section-title">기능</div>
+            <div className="part-section-content">{func}</div>
+          </div>
+        )}
+        {structure && (
+          <div className="part-section">
+            <div className="part-section-title">구조</div>
+            <div className="part-section-content">{structure}</div>
+          </div>
+        )}
+         {material && (
+          <div className="part-section">
+            <div className="part-section-title">재질</div>
+            <div className="part-section-content">{material}</div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -521,13 +521,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
           <div className="inner">
             {/* 상단: 탭 + PDF 버튼 */}
             <div className="learn-header-row">
-
               <div className="learn-tabs-wrap">
-                {/* ⬅ 뒤로가기 버튼 */}
-                <button className="learn-back-btn" onClick={onBack} title="뒤로가기">
-                  ‹
-                </button>
-
+                <button className="learn-back-btn" onClick={onBack} title="뒤로가기">‹</button>
                 <div className="learn-tabs">
                 {tabs.map((t) => (
                   <button key={t} className={`learn-tab${activeTab === t ? " active" : ""}`} onClick={() => handleTabClick(t)}>
@@ -535,9 +530,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                   </button>
                 ))}
                 </div>
-
               </div>
-
               <button className="pdf-report-btn" onClick={generatePdfReport}>
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M4 2v12M12 2v12M2 8h12" strokeLinecap="round" />
@@ -551,49 +544,35 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
               <div className="viewer-panel">
                 {activeTab === "퀴즈" ? (
                   <div className="quiz-container">
-                    {!quizFinished ? (
+                    {quizzes.length === 0 ? (
+                       <div style={{color:"#fff", padding:"40px", textAlign:"center"}}>등록된 퀴즈가 없습니다.</div>
+                    ) : !quizFinished ? (
                       <>
-                        {/* 퀴즈 헤더 */}
                         <div className="quiz-header">
-                          <h2 className="quiz-main-title">제트 엔진 퀴즈</h2>
+                          <h2 className="quiz-main-title">{fullModel.title} 퀴즈</h2>
                           <div className="quiz-progress">
                             <div className="quiz-progress-bar">
-                              <div 
-                                className="quiz-progress-fill" 
-                                style={{ width: `${((quizIdx + 1) / QUIZ_DATA.length) * 100}%` }}
-                              />
+                              <div className="quiz-progress-fill" style={{ width: `${((quizIdx + 1) / quizzes.length) * 100}%` }} />
                             </div>
-                            <div className="quiz-progress-text">{quizIdx + 1}/{QUIZ_DATA.length}</div>
+                            <div className="quiz-progress-text">{quizIdx + 1}/{quizzes.length}</div>
                           </div>
                         </div>
 
-                        {/* 퀴즈 질문 */}
                         <div className="quiz-question-section">
-                          <div className="quiz-question">{QUIZ_DATA[quizIdx].question}</div>
+                          <div className="quiz-question">{quizzes[quizIdx].question}</div>
                         </div>
 
-                        {/* 퀴즈 옵션 */}
                         <div className="quiz-options-grid">
-                          {QUIZ_DATA[quizIdx].options.map((opt, i) => {
+                          {quizzes[quizIdx].options.map((opt, i) => {
                             let optionClass = "quiz-option-new";
-                            
                             if (quizSubmitted) {
-                              if (i === QUIZ_DATA[quizIdx].answer) {
-                                optionClass += " correct";
-                              } else if (i === quizSelected) {
-                                optionClass += " wrong";
-                              }
+                              if (i === quizzes[quizIdx].answer) optionClass += " correct";
+                              else if (i === quizSelected) optionClass += " wrong";
                             } else if (quizSelected === i) {
                               optionClass += " selected";
                             }
-
                             return (
-                              <button
-                                key={i}
-                                className={optionClass}
-                                onClick={() => !quizSubmitted && setQuizSelected(i)}
-                                disabled={quizSubmitted}
-                              >
+                              <button key={i} className={optionClass} onClick={() => !quizSubmitted && setQuizSelected(i)} disabled={quizSubmitted}>
                                 <span className="quiz-option-number">{i + 1}.</span>
                                 <span className="quiz-option-text">{opt}</span>
                               </button>
@@ -601,36 +580,24 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                           })}
                         </div>
 
-                        
-
-                        {/* 피드백 및 버튼 */}
                         <div className="quiz-feedback">
                           {quizSubmitted && (
                             <div className={`quiz-feedback-box ${quizResults[quizResults.length - 1].correct ? "correct" : "wrong"}`}>
                               {quizResults[quizResults.length - 1].correct 
-                                ? `✓ 정답 해설 – 정답은 ${QUIZ_DATA[quizIdx].options[QUIZ_DATA[quizIdx].answer]}입니다.`
-                                : `✗ 정답 해설 – 정답은 ${QUIZ_DATA[quizIdx].options[QUIZ_DATA[quizIdx].answer]}입니다.`
+                                ? `✓ 정답! ${quizzes[quizIdx].explanation || ""}`
+                                : `✗ 오답. 정답은 ${quizzes[quizIdx].options[quizzes[quizIdx].answer]}입니다. ${quizzes[quizIdx].explanation || ""}`
                               }
                             </div>
                           )}
                         </div>
 
-                        {/* 하단 버튼 */}
                         <div className="quiz-actions">
-                          <button className="quiz-btn-secondary" onClick={resetQuiz}>
-                            이전 문제
-                          </button>
+                          <button className="quiz-btn-secondary" onClick={resetQuiz}>처음으로</button>
                           {!quizSubmitted ? (
-                            <button 
-                              className="quiz-btn-primary" 
-                              onClick={submitQuiz} 
-                              disabled={quizSelected === null}
-                            >
-                              다음 문제
-                            </button>
+                            <button className="quiz-btn-primary" onClick={submitQuiz} disabled={quizSelected === null}>정답 확인</button>
                           ) : (
                             <button className="quiz-btn-primary" onClick={nextQuestion}>
-                              {quizIdx < QUIZ_DATA.length - 1 ? "다음 문제" : "결과 보기"}
+                              {quizIdx < quizzes.length - 1 ? "다음 문제" : "결과 보기"}
                             </button>
                           )}
                         </div>
@@ -641,26 +608,23 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                         <div className="quiz-final-score">
                           <span className="quiz-score-big">{quizResults.filter((r) => r.correct).length}</span>
                           <span className="quiz-score-divider">/</span>
-                          <span className="quiz-score-total">{quizResults.length}</span>
+                          <span className="quiz-score-total">{quizzes.length}</span>
                         </div>
                         <div className="quiz-final-message">
-                          {quizResults.filter((r) => r.correct).length === quizResults.length 
+                          {quizResults.filter((r) => r.correct).length === quizzes.length 
                             ? "완벽합니다! 🎉" 
-                            : quizResults.filter((r) => r.correct).length >= quizResults.length * 0.6
+                            : quizResults.filter((r) => r.correct).length >= quizzes.length * 0.6
                             ? "잘하셨습니다! 👏"
                             : "다시 도전해보세요! 💪"
                           }
                         </div>
-                        <button className="quiz-btn-restart" onClick={resetQuiz}>
-                          다시 풀기
-                        </button>
+                        <button className="quiz-btn-restart" onClick={resetQuiz}>다시 풀기</button>
                       </div>
                     )}
                   </div>
                 ) : (
-
                   <div className="viewer-body-row">
-                    {/* 왼쪽 토글 버튼 (완제품 개요 복원) */}
+                    {/* 왼쪽 토글 (완제품 개요) */}
                     {!showProductPanel && (
                       <button className="viewer-toggle-btn-side left" onClick={() => setShowProductPanel(true)} title="완제품 개요 보기">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -669,27 +633,19 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                       </button>
                     )}
 
-                    {/* 좌측: 완제품 개요 */}
+                    {/* 좌측: 완제품 개요 (DB 연동 + AI 요약 제거) */}
                     {showProductPanel && (
                       <div className="viewer-product">
                         <div className="viewer-product-header">
                           <div className="viewer-product-title">완제품 개요</div>
-                          <button className="viewer-info-close" onClick={() => setShowProductPanel(false)}>
-                            ✕
-                          </button>
+                          <button className="viewer-info-close" onClick={() => setShowProductPanel(false)}>✕</button>
                         </div>
                         <div className="viewer-product-body">
-                          <div className="viewer-product-model-title">{selectedModel?.title || "모델 선택 필요"}</div>
+                          <div className="viewer-product-model-title">{fullModel.title || selectedModel.title}</div>
                           <div className="viewer-info-product-desc">
-                            {selectedModel?.modelUrl ? `파일: ${selectedModel.modelUrl}` : PRODUCT_INFO.desc}
+                            {fullModel.description ? fullModel.description : (fullModel.modelUrl ? `파일: ${fullModel.modelUrl}` : "설명 정보가 없습니다.")}
                           </div>
-
-                          {PRODUCT_INFO.sections.map((section, idx) => (
-                            <div key={idx} className="viewer-product-section">
-                              <div className="viewer-product-section-title">{section.title}</div>
-                              <div className="viewer-product-section-desc">{section.desc}</div>
-                            </div>
-                          ))}
+                          {/* AI 요약 제거됨 */}
                         </div>
                       </div>
                     )}
@@ -697,12 +653,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                     {/* 중앙: 3D 뷰어 */}
                     <div className={`viewer-3d${(!showInfoPanel || !showProductPanel) ? " expanded" : ""}`}>
                       <div className="viewer-3d-inner">
-                        {/* ✅ ? 도움말 버튼 (hover 시 사용법 표시) */}
                         <div className="viewer-help">
-                          <button className="viewer-help-btn" type="button" aria-label="3D 뷰어 사용법">
-                            ?
-                          </button>
-
+                          <button className="viewer-help-btn" type="button" aria-label="3D 뷰어 사용법">?</button>
                           <div className="viewer-help-tooltip">
                             <div className="viewer-help-title">3D 뷰어 사용법</div>
                             <div className="viewer-help-line">좌클릭 : 화면 회전</div>
@@ -730,9 +682,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                       <div className="assembly-slider-label">조립 및 분해</div>
                       <div className="assembly-slider-track">
                         <input
-                          type="range"
-                          min="0"
-                          max="100"
+                          type="range" min="0" max="100"
                           value={assemblyProgress}
                           onChange={(e) => setAssemblyProgress(Number(e.target.value))}
                           className="assembly-slider"
@@ -744,30 +694,25 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                       </div>
                     </div>
 
-                    {/* 우측: 부품 설명 */}
+                    {/* 우측: 부품 설명 (DB 연동) */}
                     {showInfoPanel && (
                       <div className="viewer-info">
                         <div className="viewer-info-header">
                           <div className="viewer-info-title">부품 설명</div>
-                          <button className="viewer-info-close" onClick={() => setShowInfoPanel(false)}>
-                            ✕
-                          </button>
+                          <button className="viewer-info-close" onClick={() => setShowInfoPanel(false)}>✕</button>
                         </div>
 
                         {partsLoading && <div className="viewer-parts-status">불러오는 중…</div>}
                         {partsErr && <div className="viewer-parts-status error">오류: {partsErr}</div>}
 
                         {!partsLoading && !partsErr && (
-                          /* ✅ 헤더 아래 전체를 스크롤 컨테이너로 감싼다 */
                           <div className="viewer-info-scroll">
-                            {/* 부품 썸네일 그리드 */}
                             {parts.length > 0 && (
                               <div className="viewer-parts-grid">
                                 {parts.map((part, idx) => {
                                   const partKey = getPartKey(part);
                                   const isActive = partKey === selectedPartKey;
                                   const IconComponent = PART_ICONS[idx % PART_ICONS.length];
-
                                   return (
                                     <div
                                       key={partKey}
@@ -781,51 +726,17 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                                 })}
                               </div>
                             )}
-
-                            {/* 선택된 부품 상세 정보 (새 디자인) */}
-                            <div className="viewer-part-detail-new">
-                              <div className="part-section">
-                                <div className="part-section-title">압축기</div>
-                                <div className="part-section-content">
-                                  공기를 흡입하여 고압으로 압축하기 위한 장치로 높은 압력을 만들어 연소실로 보냅니다.
-                                </div>
-                              </div>
-
-                              <div className="part-section">
-                                <div className="part-section-title">연소실</div>
-                                <div className="part-section-content">
-                                  압축된 공기와 연료를 혼합하여 폭발시키는 부분으로 높은 온도와 압력을 만들어 내는 곳입니다.
-                                </div>
-                              </div>
-
-                              <div className="part-section">
-                                <div className="part-section-title">터빈</div>
-                                <div className="part-section-content">
-                                  연소실에서 나온 고온 고압의 가스를 이용하여 회전하며 압축기를 구동시킵니다.
-                                </div>
-                              </div>
-
-                              <div className="part-section">
-                                <div className="part-section-title">노즐</div>
-                                <div className="part-section-content">
-                                  터빈을 지나 배출되는 가스를 이용하여 추진력을 발생시키며 비행기를 앞으로 밀어줍니다.
-                                </div>
-                              </div>
-
-                              
-                            </div>
+                            {/* 상세 정보 */}
+                            {renderPartDetail()}
                           </div>
                         )}
                       </div>
                     )}
 
-
-
-                    {/* 오른쪽 토글 버튼 (부품 설명 복원) */}
+                    {/* 오른쪽 토글 */}
                     {!showInfoPanel && (
                       <button className="viewer-toggle-btn-side right" onClick={() => setShowInfoPanel(true)} title="부품 설명 보기">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                          {/*<path d="M6 2l6 6-6 6" />*/}
                           <path d="M10 2L4 8l6 6" />
                         </svg>
                       </button>
@@ -834,7 +745,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                 )}
               </div>
 
-              {/* ═══ 오른쪽: AI + 메모장 ═══ */}
+              {/* ═══ 오른쪽: AI + 메모장 (DB 연동) ═══ */}
               <div className="right-panel">
                 <div className="ai-card">
                   <div className="ai-card-header">
@@ -853,11 +764,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                         <div className="ai-chat-bubble">{msg.text}</div>
                       </div>
                     ))}
-                    {isAiLoading && (
-                      <div className="ai-chat-msg ai">
-                        <div className="ai-chat-bubble">...</div>
-                      </div>
-                    )}
+                    {isAiLoading && <div className="ai-chat-msg ai"><div className="ai-chat-bubble">...</div></div>}
                     <div ref={chatBottomRef} />
                   </div>
                 </div>
@@ -865,9 +772,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                 <div className="memo-card">
                   <div className="memo-header">
                     <button className="memo-header-note-tab">Note</button>
-                    <button className="memo-header-add" onClick={addMemo}>
-                      +
-                    </button>
+                    <button className="memo-header-add" onClick={addMemo}>+</button>
                   </div>
                   <div
                     className="memo-notes-scroll"
@@ -880,30 +785,28 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                     {memos.map((memo, idx) => (
                       <div key={idx} className="memo-note">
                         <div className="memo-note-top">
-                          <span className="memo-note-label">{memo.label}</span>
+                          <span className="memo-note-label">Memo #{idx+1}</span>
                           <div className="memo-note-actions">
-                            <button className="memo-note-expand" onClick={() => setExpandedMemo(idx)}>
-                              ↗
-                            </button>
-                            <button className="memo-note-delete" onClick={() => deleteMemo(idx)}>
-                              ×
-                            </button>
+                            <button className="memo-note-expand" onClick={() => setExpandedMemo(idx)}>↗</button>
+                            <button className="memo-note-delete" onClick={() => deleteMemo(idx)}>×</button>
                           </div>
                         </div>
                         <div className="memo-note-body">
                           <textarea
                             className="memo-note-title-input"
                             placeholder="제목..."
-                            value={memo.title}
-                            onChange={(e) => updateMemo(idx, "title", e.target.value)}
+                            value={memo.title || ""}
+                            onChange={(e) => updateMemoLocal(idx, "title", e.target.value)}
+                            onBlur={() => saveMemoToDb(memo)}
                             rows={1}
                           />
                           <div className="memo-note-divider" />
                           <textarea
                             className="memo-note-content-input"
                             placeholder="내용..."
-                            value={memo.content}
-                            onChange={(e) => updateMemo(idx, "content", e.target.value)}
+                            value={memo.content || ""}
+                            onChange={(e) => updateMemoLocal(idx, "content", e.target.value)}
+                            onBlur={() => saveMemoToDb(memo)}
                           />
                         </div>
                       </div>
@@ -936,43 +839,40 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
             </div>
           </div>
         </section>
-
-
       </div>
 
+      {/* 메모 확장 모달 */}
       {expandedMemo !== null && memos[expandedMemo] && (
         <div className="memo-modal-overlay" onClick={() => setExpandedMemo(null)}>
           <div className="memo-modal" onClick={(e) => e.stopPropagation()}>
             <div className="memo-modal-header">
-              <span className="memo-modal-label">{memos[expandedMemo].label}</span>
+              <span className="memo-modal-label">Memo #{expandedMemo+1}</span>
               <div className="memo-modal-header-actions">
-                <button className="memo-modal-delete" onClick={() => deleteMemo(expandedMemo)}>
-                  삭제
-                </button>
-                <button className="memo-modal-close" onClick={() => setExpandedMemo(null)}>
-                  ✕
-                </button>
+                <button className="memo-modal-delete" onClick={() => deleteMemo(expandedMemo)}>삭제</button>
+                <button className="memo-modal-close" onClick={() => setExpandedMemo(null)}>✕</button>
               </div>
             </div>
             <textarea
               className="memo-modal-title"
               placeholder="제목..."
-              value={memos[expandedMemo].title}
-              onChange={(e) => updateMemo(expandedMemo, "title", e.target.value)}
+              value={memos[expandedMemo].title || ""}
+              onChange={(e) => updateMemoLocal(expandedMemo, "title", e.target.value)}
+              onBlur={() => saveMemoToDb(memos[expandedMemo])}
             />
             <div className="memo-modal-divider" />
             <textarea
               className="memo-modal-content"
               placeholder="내용..."
-              value={memos[expandedMemo].content}
-              onChange={(e) => updateMemo(expandedMemo, "content", e.target.value)}
+              value={memos[expandedMemo].content || ""}
+              onChange={(e) => updateMemoLocal(expandedMemo, "content", e.target.value)}
+              onBlur={() => saveMemoToDb(memos[expandedMemo])}
             />
           </div>
         </div>
       )}
 
       {/* ════════════════════════════════════════════ */}
-      {/* PDF 생성용 숨겨진 리포트 템플릿 (보이지 않음)  */}
+      {/* PDF 생성용 숨겨진 리포트 템플릿 (GitHub Style)  */}
       {/* ════════════════════════════════════════════ */}
       <div 
         id="hidden-pdf-report" 
@@ -981,72 +881,126 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
           top: "-10000px",
           left: "-10000px",
           width: "210mm",
-          minHeight: "297mm",
+          minHeight: "297mm", // A4
           padding: "20mm",
-          backgroundColor: "#fff",
-          color: "#000",
-          fontFamily: "'Noto Sans KR', sans-serif",
-          zIndex: -1
+          backgroundColor: "#ffffff",
+          color: "#24292f", // GitHub Default Text Color
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+          zIndex: -1,
+          boxSizing: "border-box"
         }}
       >
-        {/* ... (이전 답변의 리포트 내용 코드 복사) ... */}
-         <div style={{ borderBottom: "2px solid #333", paddingBottom: "10px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "end" }}>
-          <div>
-            <h1 style={{ fontSize: "24px", fontWeight: "bold", margin: 0, color: "#1a3a4a" }}>SIMVEX 학습 리포트</h1>
-            <p style={{ fontSize: "12px", color: "#666", margin: "5px 0 0" }}>Simulation & Virtual Experience Education</p>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: "12px", margin: 0 }}>생성일: {new Date().toLocaleDateString()}</p>
-            <p style={{ fontSize: "14px", fontWeight: "bold", margin: "4px 0 0" }}>{selectedModel?.title || "학습 모델 미선택"}</p>
+        {/* 0. 헤더 (모델 이름) */}
+        <div style={{ marginBottom: "30px", borderBottom: "1px solid #d0d7de", paddingBottom: "10px" }}>
+          <h1 style={{ fontSize: "32px", fontWeight: "600", margin: "0 0 10px 0" }}>
+            {selectedModel?.title || "Untitled Model"}
+          </h1>
+          <div style={{ fontSize: "14px", color: "#57606a" }}>
+            Simvex Report generated on {new Date().toLocaleDateString()}
           </div>
         </div>
 
-        {/* 1. 학습 요약 */}
-        <div style={{ marginBottom: "30px" }}>
-          <h2 style={{ fontSize: "18px", borderLeft: "4px solid #00bcd4", paddingLeft: "10px", marginBottom: "12px", color: "#333" }}>1. 학습 개요</h2>
-          <div style={{ background: "#f5f7fa", padding: "15px", borderRadius: "8px", fontSize: "13px", lineHeight: "1.6" }}>
-            <p style={{ margin: "0 0 5px" }}><strong>• 학습 주제:</strong> {selectedModel?.title}</p>
-
-            {/* 사진 */}
-            <div style={{ margin: "10px 0", border: "1px solid #ddd", borderRadius: "4px", overflow: "hidden" }}>
-              <p style={{ margin: "5px 10px", fontWeight: "bold", color: "#555" }}>• 현재 조립 상태 ({assemblyProgress}%)</p>
-              <img 
-                id="report-screenshot-img" 
-                alt="학습 화면 스크린샷" 
-                style={{ width: "100%", height: "auto", display: "block", minHeight: "150px", backgroundColor: "#eee" }} 
-              />
-            </div>
-          
+        {/* 1. 사진 (Photo) */}
+        <div style={{ marginBottom: "40px" }}>
+          <h2 style={{ 
+            fontSize: "24px", 
+            fontWeight: "600", 
+            borderBottom: "1px solid #d8dee4", 
+            paddingBottom: "0.3em", 
+            marginBottom: "16px",
+            marginTop: "24px"
+          }}>
+            Photo
+          </h2>
+          <div style={{ 
+            border: "1px solid #d0d7de", 
+            borderRadius: "6px", 
+            overflow: "hidden", 
+            backgroundColor: "#f6f8fa" 
+          }}>
+            <img 
+              id="report-screenshot-img" 
+              alt="Model Screenshot" 
+              style={{ width: "100%", height: "auto", display: "block" }} 
+            />
           </div>
         </div>
 
-        {/* 2. AI 대화 기록 */}
-
-        {/* 3. 내 학습 메모 */}
-        <div style={{ marginBottom: "30px" }}>
-          <h2 style={{ fontSize: "18px", borderLeft: "4px solid #8b5cf6", paddingLeft: "10px", marginBottom: "12px", color: "#333" }}>3. 학습 메모</h2>
+        {/* 2. 메모장 (Memo) */}
+        <div style={{ marginBottom: "40px" }}>
+          <h2 style={{ 
+            fontSize: "24px", 
+            fontWeight: "600", 
+            borderBottom: "1px solid #d8dee4", 
+            paddingBottom: "0.3em", 
+            marginBottom: "16px",
+            marginTop: "24px"
+          }}>
+            Memo
+          </h2>
           {memos.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {memos.map((memo, i) => (
-                <div key={i} style={{ border: "1px solid #ddd", borderRadius: "6px", padding: "12px", background: "#fff" }}>
-                  <div style={{ fontSize: "11px", color: "#888", marginBottom: "4px" }}>{memo.label}</div>
-                  <div style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "6px", color: "#333" }}>{memo.title || "(제목 없음)"}</div>
-                  <div style={{ fontSize: "12px", color: "#555", whiteSpace: "pre-wrap" }}>{memo.content || "(내용 없음)"}</div>
+                <div key={i} style={{ 
+                  border: "1px solid #d0d7de", 
+                  borderRadius: "6px", 
+                  padding: "16px", 
+                  backgroundColor: "#ffffff" 
+                }}>
+                  <div style={{ fontSize: "16px", fontWeight: "600", marginBottom: "8px", color: "#24292f" }}>
+                    {memo.title || "Untitled Note"}
+                  </div>
+                  <div style={{ fontSize: "14px", lineHeight: "1.5", color: "#24292f", whiteSpace: "pre-wrap" }}>
+                    {memo.content || ""}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p style={{ color: "#888", fontStyle: "italic", fontSize: "13px" }}>작성된 메모가 없습니다.</p>
+            <p style={{ color: "#57606a", fontStyle: "italic" }}>No memos written.</p>
           )}
         </div>
-        
-        {/* 푸터 */}
-        <div style={{ marginTop: "50px", borderTop: "1px solid #eee", paddingTop: "15px", textAlign: "center", fontSize: "11px", color: "#aaa" }}>
-          SIMVEX - Simulation Virtual Experience Education Platform
+
+        {/* 3. AI 요약 (AI Summary) */}
+        <div style={{ marginBottom: "40px" }}>
+          <h2 style={{ 
+            fontSize: "24px", 
+            fontWeight: "600", 
+            borderBottom: "1px solid #d8dee4", 
+            paddingBottom: "0.3em", 
+            marginBottom: "16px",
+            marginTop: "24px"
+          }}>
+            AI Summary
+          </h2>
+          <div style={{ 
+            fontSize: "14px", 
+            lineHeight: "1.6", 
+            color: "#24292f",
+            backgroundColor: "#ffffff",
+            padding: "5px" // 약간의 여백
+          }}>
+            {/* selectedModel.ai_summary가 존재하면 출력, 없으면 안내 문구 */}
+            {selectedModel?.ai_summary ? (
+              <div style={{ whiteSpace: "pre-wrap" }}>{selectedModel.ai_summary}</div>
+            ) : (
+              <p style={{ color: "#57606a", fontStyle: "italic" }}>AI 요약 정보가 없습니다.</p>
+            )}
+          </div>
+        </div>
+
+        {/* 푸터 (GitHub Footer Style) */}
+        <div style={{ 
+          marginTop: "60px", 
+          borderTop: "1px solid #d0d7de", 
+          paddingTop: "20px", 
+          textAlign: "center", 
+          fontSize: "12px", 
+          color: "#57606a" 
+        }}>
+          <span style={{ fontWeight: "600" }}>SIMVEX</span> &copy; 2026
         </div>
       </div>
-
-
     </>
   );
 }
