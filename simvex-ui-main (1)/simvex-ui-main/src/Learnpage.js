@@ -156,7 +156,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   const [selectedPartKey, setSelectedPartKey] = useState(null);
 
   /* ✅ 조립/분해 슬라이더 */
-  const [assemblyProgress, setAssemblyProgress] = useState(100); // 100 = 완전 조립, 0 = 완전 분해
+  const [assemblyProgress, setAssemblyProgress] = useState(0); // 0 = 완전 조립, 100 = 완전 분해
 
   const [showInfoPanel, setShowInfoPanel] = useState(true);
   const [showProductPanel, setShowProductPanel] = useState(true);
@@ -738,8 +738,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                           className="assembly-slider"
                         />
                         <div className="assembly-slider-markers">
-                          <span className="assembly-slider-marker-label">분해</span>
                           <span className="assembly-slider-marker-label">조립</span>
+                          <span className="assembly-slider-marker-label">분해</span>
                         </div>
                       </div>
                     </div>
