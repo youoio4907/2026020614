@@ -11,7 +11,6 @@ import ThreeViewer from "./ThreeViewer";
 /* ════════════════════════════════════════════ */
 /* 부품 SVG 아이콘들 (기존 디자인 유지)           */
 /* ════════════════════════════════════════════ */
-
 const PartFan = () => (
   <svg viewBox="0 0 40 40" fill="none">
     <circle cx="20" cy="20" r="18" fill="#1a2a3a" stroke="#3a6a8a" strokeWidth="1" />
@@ -132,8 +131,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  /* AI 채팅 */
-  const [chatMsgs, setChatMsgs] = useState([{ role: "ai", text: "안녕하세요! 궁금한 점이 있으신가요?" }]);
+  /* AI 채팅 (초기값 빈 배열로 변경하여 로딩 표시) */
+  const [chatMsgs, setChatMsgs] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
   const chatBottomRef = useRef(null);
@@ -161,7 +160,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     scrollRef.current.scrollLeft = scrollLeft.current - (e.pageX - scrollRef.current.offsetLeft - startX.current);
   }, []);
 
-  /* ✅ 초기 데이터 로드 (DB 연동) */
+  /* ✅ 초기 데이터 로드 (DB 연동 + 채팅 내역 로드) */
   useEffect(() => {
     if (!selectedModel?.id) return;
 
@@ -199,6 +198,28 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
       .then(res => res.json())
       .then(data => setMemos(Array.isArray(data) ? data : []))
       .catch(err => console.error("메모 로드 실패:", err));
+
+    // ✅ 5. 대화 내역(Chat History) 불러오기
+    fetch(`/api/ai/history/${selectedModel.id}`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        // DB: [{question, answer}, ...] -> UI: [{role, text}, ...] 변환
+        const history = [];
+        // 만약 대화 내역이 없다면 환영 메시지 추가
+        if (data.length === 0) {
+          history.push({ role: "ai", text: "안녕하세요! 궁금한 점이 있으신가요?" });
+        } else {
+          data.forEach(item => {
+            history.push({ role: "user", text: item.question });
+            history.push({ role: "ai", text: item.answer });
+          });
+        }
+        setChatMsgs(history);
+      })
+      .catch(err => {
+        console.error("대화 내역 로드 실패:", err);
+        setChatMsgs([{ role: "ai", text: "안녕하세요! (이전 대화 로드 실패)" }]);
+      });
 
   }, [selectedModel]);
 
@@ -314,7 +335,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMsgs, isAiLoading]);
 
-  /* AI 요청 */
+  /* ✅ AI 요청 로직 */
   const sendChat = async () => {
     const question = chatInput.trim();
     if (!question || isAiLoading) return;
@@ -348,6 +369,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const answer = data.answer || data.message || "응답 없음";
+      
+      // 서버에서 저장 완료되었으므로 UI에만 추가
       setChatMsgs((prev) => [...prev, { role: "ai", text: answer }]);
     } catch (err) {
       setChatMsgs((prev) => [...prev, { role: "ai", text: `오류: ${err.message}` }]);
@@ -962,7 +985,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
           )}
         </div>
 
-        {/* 3. AI 요약 (AI Summary) - 수정된 부분 */}
+        {/* 3. [수정됨] Q&A History Section (AI Summary 대체) */}
         <div style={{ marginBottom: "40px" }}>
           <h2 style={{ 
             fontSize: "24px", 
@@ -972,20 +995,26 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
             marginBottom: "16px",
             marginTop: "24px"
           }}>
-            AI Summary
+            Q&A History
           </h2>
           <div style={{ 
             fontSize: "14px", 
             lineHeight: "1.6", 
             color: "#24292f",
             backgroundColor: "#ffffff",
-            padding: "5px" // 약간의 여백
+            padding: "5px" 
           }}>
-            {/* fullModel.aiSummary (CamelCase)로 수정 */}
-            {fullModel?.aiSummary ? (
-              <div style={{ whiteSpace: "pre-wrap" }}>{fullModel.aiSummary}</div>
+            {chatMsgs.length > 0 ? (
+              chatMsgs.map((msg, idx) => (
+                <div key={idx} style={{ marginBottom: "15px", paddingBottom: "15px", borderBottom: "1px dashed #d0d7de" }}>
+                  <div style={{ fontWeight: "600", color: msg.role === "ai" ? "#0969da" : "#57606a", marginBottom: "4px" }}>
+                    {msg.role === "ai" ? "🤖 AI Answer" : "👤 User Question"}
+                  </div>
+                  <div style={{ whiteSpace: "pre-wrap" }}>{msg.text}</div>
+                </div>
+              ))
             ) : (
-              <p style={{ color: "#57606a", fontStyle: "italic" }}>AI 요약 정보가 없습니다.</p>
+              <p style={{ color: "#57606a", fontStyle: "italic" }}>대화 내역이 없습니다.</p>
             )}
           </div>
         </div>
