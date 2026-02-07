@@ -893,7 +893,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
         {/* 0. 헤더 (모델 이름) */}
         <div style={{ marginBottom: "30px", borderBottom: "1px solid #d0d7de", paddingBottom: "10px" }}>
           <h1 style={{ fontSize: "32px", fontWeight: "600", margin: "0 0 10px 0" }}>
-            {selectedModel?.title || "Untitled Model"}
+            {/* fullModel을 우선 사용 */}
+            {fullModel?.title || selectedModel?.title || "Untitled Model"}
           </h1>
           <div style={{ fontSize: "14px", color: "#57606a" }}>
             Simvex Report generated on {new Date().toLocaleDateString()}
@@ -961,7 +962,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
           )}
         </div>
 
-        {/* 3. AI 요약 (AI Summary) */}
+        {/* 3. AI 요약 (AI Summary) - 수정된 부분 */}
         <div style={{ marginBottom: "40px" }}>
           <h2 style={{ 
             fontSize: "24px", 
@@ -980,9 +981,9 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
             backgroundColor: "#ffffff",
             padding: "5px" // 약간의 여백
           }}>
-            {/* selectedModel.ai_summary가 존재하면 출력, 없으면 안내 문구 */}
-            {selectedModel?.ai_summary ? (
-              <div style={{ whiteSpace: "pre-wrap" }}>{selectedModel.ai_summary}</div>
+            {/* fullModel.aiSummary (CamelCase)로 수정 */}
+            {fullModel?.aiSummary ? (
+              <div style={{ whiteSpace: "pre-wrap" }}>{fullModel.aiSummary}</div>
             ) : (
               <p style={{ color: "#57606a", fontStyle: "italic" }}>AI 요약 정보가 없습니다.</p>
             )}
