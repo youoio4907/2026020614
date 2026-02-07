@@ -1,4 +1,3 @@
-// ThreeViewer.jsx
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -12,6 +11,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
  * @param {string} selectedPartKey - 선택된 부품 키
  * @param {number} assemblyProgress - 조립 진행도 (0~100)
  * @param {Function} onPartClick - 부품 클릭 핸들러
+ * @param {Function} onAssemblyProgressChange - 분해도 변경 알림 핸들러
  */
 export default function ThreeViewer({
   modelUrl,
@@ -19,6 +19,7 @@ export default function ThreeViewer({
   selectedPartKey,
   assemblyProgress = 100,
   onPartClick,
+  onAssemblyProgressChange,
 }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -44,14 +45,14 @@ export default function ThreeViewer({
  // ═══ 2. 저장 로직 (useCallback으로 메모리 효율화) ═══
   const saveSession = useCallback(() => {
     if (!cameraRef.current || !controlsRef.current || !isModelReady){console.error("❌ 카메라나 컨트롤이 없습니다!"); return;}
-    console.log("🚀 saveSession 함수 진입 시도!");
+    
     const sessionObj = {
       camera: {
         position: cameraRef.current.position.clone(),
         target: controlsRef.current.target.clone(),
         zoom: cameraRef.current.zoom 
       },
-      progress: assemblyProgress,
+      progress: assemblyProgress, // 분해도 저장
       lastSeen: new Date().toISOString()
     };
 
@@ -68,16 +69,21 @@ export default function ThreeViewer({
       saveTimeout = setTimeout(saveSession, 300);
     };
 
+    // 분해도 변경 시에도 저장 트리거
+    if (assemblyProgress !== undefined) {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(saveSession, 500);
+    }
+
     controlsRef.current.addEventListener("change", handleControlChange);
     return () => {
       controlsRef.current?.removeEventListener("change", handleControlChange);
       clearTimeout(saveTimeout);
     };
-  }, [isModelReady, saveSession]);
+  }, [isModelReady, saveSession, assemblyProgress]);
 
-  // ═══ 4. 시점 복구 로직 (Restore) ═══
+  // ═══ 4. 시점 및 상태 복구 로직 (Restore) ═══
   useEffect(() => {
-    // 모델이 로드된 직후(isModelReady)에만 실행
     if (!isModelReady || !cameraRef.current || !controlsRef.current) return;
 
     const rawData = localStorage.getItem(`viewer_${currentModelName}`);
@@ -92,14 +98,19 @@ export default function ThreeViewer({
       
       cameraRef.current.updateProjectionMatrix(); 
       controlsRef.current.update();
-      console.log(`[ThreeViewer] ${currentModelName} 세션 복구 완료`);
+      
+      // 저장된 분해도가 있으면 복구 (부모 상태 업데이트)
+      if (data.progress !== undefined && onAssemblyProgressChange) {
+         console.log(`[ThreeViewer] ${currentModelName} 상태 복구: 분해도 ${data.progress}`);
+         onAssemblyProgressChange(data.progress);
+      }
+
     } else {
-      // 기록 없으면 기본값으로 초기화
       cameraRef.current.position.set(DEFAULT_POS.x, DEFAULT_POS.y, DEFAULT_POS.z);
       controlsRef.current.target.set(0, 0, 0);
       controlsRef.current.update();
     }
-  }, [isModelReady, currentModelName]);
+  }, [isModelReady, currentModelName]); 
 
   // ═══ 초기 설정 ═══
   useEffect(() => {
@@ -125,7 +136,7 @@ export default function ThreeViewer({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
 
-    // ✅ 캔버스가 레이아웃에 딱 붙도록
+    // 캔버스가 레이아웃에 딱 붙도록
     renderer.domElement.style.display = "block";
 
     mountRef.current.appendChild(renderer.domElement);
@@ -152,11 +163,11 @@ export default function ThreeViewer({
     fillLight.position.set(-10, -5, -5);
     scene.add(fillLight);
 
-    // 그리드 헬퍼 (선택사항)
+    // 그리드 헬퍼
     const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
     scene.add(gridHelper);
 
-    // ✅ mount 크기 기준으로 camera/renderer 리사이즈
+    // 리사이즈
     const resizeToMount = () => {
       if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
 
@@ -167,12 +178,10 @@ export default function ThreeViewer({
       cameraRef.current.aspect = w / h;
       cameraRef.current.updateProjectionMatrix();
 
-      // ✅ 중요: setSize(w,h) 로 "CSS 크기"까지 같이 갱신해야 패널 토글 시 꽉 찬다
       rendererRef.current.setSize(w, h);
       rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     };
 
-    // 애니메이션 루프
     let animationId;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
@@ -181,20 +190,16 @@ export default function ThreeViewer({
     };
     animate();
 
-    // ✅ 1) window resize
     const handleResize = () => resizeToMount();
     window.addEventListener("resize", handleResize);
 
-    // ✅ 2) 레이아웃 변화(패널 토글 등) 감지: ResizeObserver
     resizeObserverRef.current = new ResizeObserver(() => {
       resizeToMount();
     });
     resizeObserverRef.current.observe(mountRef.current);
 
-    // 초기 1회 보정
     resizeToMount();
 
-    // 클린업
     return () => {
       window.removeEventListener("resize", handleResize);
 
@@ -213,31 +218,21 @@ export default function ThreeViewer({
     };
   }, []);
 
+  // 줌 복구 관련 (중복 로직 방지 위해 통합된 상태)
   useEffect(() => {
-  if (!isModelReady || !currentModelName) return;
-
-  const rawData = localStorage.getItem(`viewer_${currentModelName}`);
-  
-  if (rawData) {
-    const data = JSON.parse(rawData);
-    const { position, target, zoom } = data.camera;
-
-    // 1. 위치와 타겟 복구
-    cameraRef.current.position.set(position.x, position.y, position.z);
-    controlsRef.current.target.set(target.x, target.y, target.z);
-    
-    // 2. 💡 저장된 줌 값 적용 (없으면 기본값 1)
-    cameraRef.current.zoom = zoom || 1;
-    
-    // 3. 변경사항을 반영하기 위해 반드시 호출
-    cameraRef.current.updateProjectionMatrix(); 
-    controlsRef.current.update();
-  }
-}, [isModelReady, currentModelName]);
+    if (!isModelReady || !currentModelName) return;
+    const rawData = localStorage.getItem(`viewer_${currentModelName}`);
+    if (rawData) {
+      const data = JSON.parse(rawData);
+      const { zoom } = data.camera;
+      cameraRef.current.zoom = zoom || 1;
+      cameraRef.current.updateProjectionMatrix(); 
+      controlsRef.current.update();
+    }
+  }, [isModelReady, currentModelName]);
 
 
   // ═══ GLB 파일 로드 ═══
-  
   useEffect(() => {
     if (!modelUrl || !sceneRef.current) return;
     setIsModelReady(false);
@@ -245,29 +240,24 @@ export default function ThreeViewer({
     const loader = new GLTFLoader();
 
     loader.load(modelUrl, (gltf) => {
-      // 1. 기존 모델 제거
       const existingModel = sceneRef.current.getObjectByName("loadedModel");
       if (existingModel) sceneRef.current.remove(existingModel);
 
       const model = gltf.scene;
       model.name = "loadedModel";
 
-      // 2. 모델 크기 정규화 (유저님 코드)
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z);
       const scale = 2 / maxDim; 
       model.scale.setScalar(scale);
 
-      // 3. 모델 중심 정렬 (유저님 코드)
       const center = box.getCenter(new THREE.Vector3());
       model.position.sub(center.multiplyScalar(scale));
 
-      // 4. 장면 추가
       sceneRef.current.add(model);
       setIsModelReady(true);
 
-      //5. 카메라/렌더러 리사이즈 보정 (유저님 코드)
       if (mountRef.current && cameraRef.current && rendererRef.current) {
         const w = mountRef.current.clientWidth;
         const h = mountRef.current.clientHeight;
@@ -284,12 +274,10 @@ export default function ThreeViewer({
     });
   }, [modelUrl]);
 
+  // ═══ [1] 데이터 매핑 (Parts 연결) ═══
   useEffect(() => {
-    // 화면에 "loadedModel"이 있고, DB 데이터(parts)도 도착했을 때만 실행
     const model = sceneRef.current?.getObjectByName("loadedModel");
     if (!model || parts.length === 0) return;
-
-    console.log("[ThreeViewer] 2. 데이터 매핑 시작 (parts 연결)");
 
     // 기존 관리 리스트 초기화
     logicalPartsRef.current.clear();
@@ -302,7 +290,6 @@ export default function ThreeViewer({
         let logicalPart = null;
         let partData = null;
 
-        // 부모를 타고 올라가며 DB의 meshName과 일치하는 '진짜 주인' 찾기
         while (current && current !== model) {
           partData = parts.find(p => p.meshName === current.name);
           if (partData) {
@@ -313,7 +300,6 @@ export default function ThreeViewer({
         }
 
         if (logicalPart) {
-          // 데이터 심어주기 (클릭/애니메이션용)
           child.userData.logicalPart = logicalPart;
           child.userData.partData = partData;
           
@@ -325,106 +311,91 @@ export default function ThreeViewer({
         }
       }
     });
-    console.log("[ThreeViewer] 3. 모든 부품 연결 성공!");
-  }, [parts, modelUrl,isModelReady]);
+  }, [parts, modelUrl, isModelReady]);
 
-  // ═══ 조립/분해 애니메이션 ═══
-  // [2] 데이터 매핑 전용 useEffect (JSON 파싱 포함)
-useEffect(() => {
-  const model = sceneRef.current?.getObjectByName("loadedModel");
-  if (!model || parts.length === 0 || !isModelReady) return;
+  // ═══ [2] 조립/분해 초기화 (고정 방향/위치 설정) ═══
+  useEffect(() => {
+    const model = sceneRef.current?.getObjectByName("loadedModel");
+    if (!model || parts.length === 0 || !isModelReady) return;
 
-  logicalPartsRef.current.clear();
-  originalPositionsRef.current.clear();
+    // 매핑 로직과 별개로 좌표 초기화는 parts가 바뀔 때마다 실행
+    model.traverse((child) => {
+      if (child.isMesh) {
+        let current = child;
+        let partData = null;
 
-  model.traverse((child) => {
-    if (child.isMesh) {
-      let current = child;
-      let partData = null;
-
-      while (current && current !== model) {
-        partData = parts.find(p => p.meshName === current.name);
-        if (partData) break;
-        current = current.parent;
-      }
-
-      if (partData && !logicalPartsRef.current.has(current.name)) {
-        // 💡 JSON 문자열인 content를 객체로 변환
-        const meta = typeof partData.content === 'string' 
-          ? JSON.parse(partData.content) 
-          : partData.content;
-
-        // 1. DB의 position을 '절대적 고향'으로 설정
-        const homePos = new THREE.Vector3(
-          meta.position.x,
-          meta.position.y,
-          meta.position.z
-        );
-        
-        // 2. DB의 explodeVector를 '절대적 방향'으로 설정
-        const explodeDir = new THREE.Vector3(
-          meta.explodeVector.x,
-          meta.explodeVector.y,
-          meta.explodeVector.z
-        );
-
-        // 방향이 0,0,0이면 자동으로 계산 (기존 로직 유지)
-        if (explodeDir.length() < 0.001) {
-          explodeDir.copy(homePos).normalize();
-          if (explodeDir.length() < 0.01) explodeDir.set(0, 1, 0);
+        while (current && current !== model) {
+          partData = parts.find(p => p.meshName === current.name);
+          if (partData) break;
+          current = current.parent;
         }
 
-        current.position.copy(homePos); // 초기 위치 강제 세팅
-        originalPositionsRef.current.set(current.name, homePos.clone());
-        current.userData.fixedDir = explodeDir; // 방향 고정
-        
-        logicalPartsRef.current.set(current.name, current);
-      }
-    }
-  });
-}, [parts, isModelReady]);
+        if (partData && logicalPartsRef.current.has(current.name)) {
+          const meta = typeof partData.content === 'string' 
+            ? JSON.parse(partData.content) 
+            : partData.content;
 
-// ═══ 3) 조립/분해 애니메이션 (절대 좌표 기반) ═══
-useEffect(() => {
-  if (!isModelReady || logicalPartsRef.current.size === 0) return;
+          const homePos = new THREE.Vector3(
+            meta.position.x,
+            meta.position.y,
+            meta.position.z
+          );
+          
+          const explodeDir = new THREE.Vector3(
+            meta.explodeVector.x,
+            meta.explodeVector.y,
+            meta.explodeVector.z
+          );
 
-  let animationFrameId;
-  const lerpFactor = 0.05; // 💡 극강의 묵직함 (0.01~0.02 추천)
-  const explosionStrength = 0.1; // 퍼지는 강도
+          if (explodeDir.length() < 0.001) {
+            explodeDir.copy(homePos).normalize();
+            if (explodeDir.length() < 0.01) explodeDir.set(0, 1, 0);
+          }
 
-  const animate = () => {
-    let isMoving = false;
-    const progress = assemblyProgress / 100; // 1이면 조립, 0이면 분해
-
-    logicalPartsRef.current.forEach((part, partName) => {
-      const homePos = originalPositionsRef.current.get(partName);
-      const explodeDir = part.userData.fixedDir;
-      if (!homePos) return;
-
-      // 💡 [논리 구조] 목표 위치 = DB 고향 + (방향 * 분해 거리)
-      // progress가 1일 때 moveDistance는 0이 되어 정확히 homePos가 됨
-      const moveDistance = progress * explosionStrength;
-      const targetPos = homePos.clone().add(explodeDir.clone().multiplyScalar(moveDistance));
-
-      // 현재 위치에서 목표 위치로 서서히 이동
-      part.position.lerp(targetPos, lerpFactor);
-
-      // 목표 지점 도달 체크 (부드러운 루프를 위해 계속 실행)
-      if (part.position.distanceTo(targetPos) > 0.0001) {
-        isMoving = true;
-      } else if (progress === 0) {
-        part.position.copy(homePos); // 완벽하게 꽂아넣기
+          current.position.copy(homePos); // 초기 위치 강제 세팅
+          originalPositionsRef.current.set(current.name, homePos.clone());
+          current.userData.fixedDir = explodeDir;
+        }
       }
     });
+  }, [parts, isModelReady]);
 
-    if (isMoving) {
-      animationFrameId = requestAnimationFrame(animate);
-    }
-  };
+  // ═══ [3] 조립/분해 애니메이션 루프 ═══
+  // ✅ [수정] parts를 dependency에 추가하여 데이터가 로드된 후에도 애니메이션이 실행되도록 함
+  useEffect(() => {
+    if (!isModelReady || logicalPartsRef.current.size === 0) return;
 
-  animate();
-  return () => cancelAnimationFrame(animationFrameId);
-}, [assemblyProgress, isModelReady]);
+    let animationFrameId;
+    const lerpFactor = 0.05; 
+    const explosionStrength = 0.1; 
+
+    const animate = () => {
+      let isMoving = false;
+      const progress = assemblyProgress / 100;
+
+      logicalPartsRef.current.forEach((part, partName) => {
+        const homePos = originalPositionsRef.current.get(partName);
+        const explodeDir = part.userData.fixedDir;
+        if (!homePos) return;
+
+        const moveDistance = progress * explosionStrength;
+        const targetPos = homePos.clone().add(explodeDir.clone().multiplyScalar(moveDistance));
+
+        part.position.lerp(targetPos, lerpFactor);
+
+        if (part.position.distanceTo(targetPos) > 0.0001) {
+          isMoving = true;
+        }
+      });
+
+      if (isMoving) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [assemblyProgress, isModelReady, parts]); // 👈 parts 추가됨!
 
   // ═══ 부품 하이라이트 ═══
   useEffect(() => {
@@ -438,18 +409,14 @@ useEffect(() => {
     });
     if (!selectedPartKey) return;
 
-
     const selectedPart = parts.find((p) => {
       if (p?.id && selectedPartKey === `id:${p.id}`) return true;
       if (p?.meshName && selectedPartKey === `mesh:${p.meshName}`) return true;
       return false;
     });
 
-     if (!selectedPart) return;
+    if (!selectedPart) return;
 
- 
-
-    console.log(`[ThreeViewer] Highlighting: ${selectedPart.meshName}`);
     const targetGroup = logicalPartsRef.current.get(selectedPart.meshName);
     if (targetGroup) {
       targetGroup.traverse((child) => {
@@ -458,7 +425,7 @@ useEffect(() => {
           child.material.emissiveIntensity = 0.5;
         }
       });
-  }
+    }
 
   }, [selectedPartKey, parts]);
 
@@ -469,12 +436,10 @@ useEffect(() => {
     const handleClick = (event) => {
       if (!cameraRef.current || !sceneRef.current) return;
 
-      // 마우스 좌표 정규화 (-1 ~ 1)
       const rect = rendererRef.current.domElement.getBoundingClientRect();
       mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      // Raycasting
       raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
 
       const intersects = raycasterRef.current.intersectObjects(clickableMeshesRef.current, true);
@@ -484,18 +449,16 @@ useEffect(() => {
         const partData = clickedMesh.userData.partData;
 
         if (partData) {
-          console.log(`[ThreeViewer] Logical Part Clicked: ${partData.meshName}`);
           onPartClick(partData);
         }        
-      }else{
-          onPartClick(null); console.log("[ThreeViewer] 빈 공간 클릭: 선택 해제");
+      } else {
+        onPartClick(null);
       }
-
     };
 
     rendererRef.current.domElement.addEventListener("click", handleClick);
     return () => rendererRef.current?.domElement.removeEventListener("click", handleClick);
-}, [onPartClick]);
+  }, [onPartClick]);
 
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>

@@ -1,3 +1,4 @@
+// Learnpage.js
 import { useState, useRef, useCallback, useEffect } from "react";
 import "./Shared.css";
 import "./Learnpage.css";
@@ -693,6 +694,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                             selectedPartKey={selectedPartKey}
                             assemblyProgress={assemblyProgress}
                             onPartClick={handlePartSelect}
+                            onAssemblyProgressChange={setAssemblyProgress} // [수정] 추가됨
                           />
                         ) : (
                           <ViewerEngineSVG />
