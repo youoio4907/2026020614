@@ -111,8 +111,8 @@ const EngineVisual = () => (
     {/* 배경 앰비언트 글로우                         */}
     {/* ══════════════════════════════════════════ */}
     <ellipse cx="200" cy="160" rx="160" ry="100" fill="rgba(0,188,212,0.06)" filter="url(#softBlur)" />
-    <ellipse cx="340" cy="320" rx="100" ry="70"  fill="rgba(30,100,60,0.07)" filter="url(#softBlur)" />
-    <ellipse cx="100" cy="350" rx="80"  ry="50"  fill="rgba(60,140,160,0.05)" filter="url(#softBlur)" />
+    <ellipse cx="340" cy="320" rx="100" ry="70" fill="rgba(30,100,60,0.07)" filter="url(#softBlur)" />
+    <ellipse cx="100" cy="350" rx="80" ry="50" fill="rgba(60,140,160,0.05)" filter="url(#softBlur)" />
 
     {/* ══════════════════════════════════════════ */}
     {/* 연결선 (와이어) — 부품 사이 연결           */}
@@ -149,14 +149,14 @@ const EngineVisual = () => (
 
       {/* ── 블레이드 층 1 (가장 큰 앞 )── */}
       <ellipse cx="140" cy="132" rx="10" ry="48" fill="#0d1e2e" stroke="#3a6a8a" strokeWidth="1.2" />
-      <ellipse cx="140" cy="132" rx="8"  ry="44" fill="url(#blade1)" opacity="0.6" />
+      <ellipse cx="140" cy="132" rx="8" ry="44" fill="url(#blade1)" opacity="0.6" />
       {/* 블레이드 개별 — 12개 */}
-      {Array.from({length:12}).map((_,i) => {
-        const a = (i/12)*360;
-        const rad = a*Math.PI/180;
-        const cx=140, cy=132, r=38;
-        const x1=cx+r*Math.cos(rad), y1=cy+r*Math.sin(rad);
-        const x2=cx+6*Math.cos(rad), y2=cy+6*Math.sin(rad);
+      {Array.from({ length: 12 }).map((_, i) => {
+        const a = (i / 12) * 360;
+        const rad = a * Math.PI / 180;
+        const cx = 140, cy = 132, r = 38;
+        const x1 = cx + r * Math.cos(rad), y1 = cy + r * Math.sin(rad);
+        const x2 = cx + 6 * Math.cos(rad), y2 = cy + 6 * Math.sin(rad);
         return <line key={`b1-${i}`} x1={x2} y1={y2} x2={x1} y2={y1}
           stroke="url(#blade1)" strokeWidth="4" strokeLinecap="round" opacity="0.9" />;
       })}
@@ -165,14 +165,14 @@ const EngineVisual = () => (
       <circle cx="140" cy="132" r="3" fill="#00e5ff" filter="url(#glow2)" />
 
       {/* ── 블레이드 층 2 (중간) ── */}
-      <ellipse cx="185" cy="132" rx="8"  ry="38" fill="#0d1e2e" stroke="#3a6a8a" strokeWidth="1" />
-      <ellipse cx="185" cy="132" rx="6"  ry="34" fill="url(#blade2)" opacity="0.55" />
-      {Array.from({length:10}).map((_,i) => {
-        const a = (i/10)*360 + 18;
-        const rad = a*Math.PI/180;
-        const cx=185, cy=132, r=28;
-        const x1=cx+r*Math.cos(rad), y1=cy+r*Math.sin(rad);
-        const x2=cx+5*Math.cos(rad), y2=cy+5*Math.sin(rad);
+      <ellipse cx="185" cy="132" rx="8" ry="38" fill="#0d1e2e" stroke="#3a6a8a" strokeWidth="1" />
+      <ellipse cx="185" cy="132" rx="6" ry="34" fill="url(#blade2)" opacity="0.55" />
+      {Array.from({ length: 10 }).map((_, i) => {
+        const a = (i / 10) * 360 + 18;
+        const rad = a * Math.PI / 180;
+        const cx = 185, cy = 132, r = 28;
+        const x1 = cx + r * Math.cos(rad), y1 = cy + r * Math.sin(rad);
+        const x2 = cx + 5 * Math.cos(rad), y2 = cy + 5 * Math.sin(rad);
         return <line key={`b2-${i}`} x1={x2} y1={y2} x2={x1} y2={y1}
           stroke="url(#blade2)" strokeWidth="3.2" strokeLinecap="round" opacity="0.85" />;
       })}
@@ -180,14 +180,14 @@ const EngineVisual = () => (
       <circle cx="185" cy="132" r="2.2" fill="#00e5ff" filter="url(#glow2)" />
 
       {/* ── 블레이드 층 3 (가장 작은 뒤) ── */}
-      <ellipse cx="225" cy="132" rx="6"  ry="28" fill="#0d1e2e" stroke="#3a6a8a" strokeWidth="0.8" />
+      <ellipse cx="225" cy="132" rx="6" ry="28" fill="#0d1e2e" stroke="#3a6a8a" strokeWidth="0.8" />
       <ellipse cx="225" cy="132" rx="4.5" ry="24" fill="url(#blade3)" opacity="0.5" />
-      {Array.from({length:8}).map((_,i) => {
-        const a = (i/8)*360 + 22;
-        const rad = a*Math.PI/180;
-        const cx=225, cy=132, r=19;
-        const x1=cx+r*Math.cos(rad), y1=cy+r*Math.sin(rad);
-        const x2=cx+4*Math.cos(rad), y2=cy+4*Math.sin(rad);
+      {Array.from({ length: 8 }).map((_, i) => {
+        const a = (i / 8) * 360 + 22;
+        const rad = a * Math.PI / 180;
+        const cx = 225, cy = 132, r = 19;
+        const x1 = cx + r * Math.cos(rad), y1 = cy + r * Math.sin(rad);
+        const x2 = cx + 4 * Math.cos(rad), y2 = cy + 4 * Math.sin(rad);
         return <line key={`b3-${i}`} x1={x2} y1={y2} x2={x1} y2={y1}
           stroke="url(#blade3)" strokeWidth="2.6" strokeLinecap="round" opacity="0.8" />;
       })}
@@ -197,16 +197,16 @@ const EngineVisual = () => (
       {/* ── 블레이드 링 구조체 ── */}
       <circle cx="140" cy="132" r="48" fill="none" stroke="url(#bladeRing)" strokeWidth="1.8" opacity="0.6" />
       <circle cx="185" cy="132" r="34" fill="none" stroke="url(#bladeRing)" strokeWidth="1.3" opacity="0.5" />
-      <circle cx="225" cy="132" r="24" fill="none" stroke="url(#bladeRing)" strokeWidth="1"   opacity="0.45" />
+      <circle cx="225" cy="132" r="24" fill="none" stroke="url(#bladeRing)" strokeWidth="1" opacity="0.45" />
 
       {/* 엔진 앞 케이스 캵 (왼쪽 끝) */}
       <ellipse cx="107" cy="132" rx="12" ry="40" fill="#162535" stroke="#3a5a75" strokeWidth="1.2" />
-      <ellipse cx="107" cy="132" rx="4"  ry="12" fill="#0a1520" stroke="#2a4a60" strokeWidth="0.8" />
+      <ellipse cx="107" cy="132" rx="4" ry="12" fill="#0a1520" stroke="#2a4a60" strokeWidth="0.8" />
 
       {/* LED 디테일 — 엔진 위 */}
-      <circle cx="160" cy="88"  r="2" fill="#00e5ff" filter="url(#tinyGlow)" opacity="0.8" />
-      <circle cx="200" cy="86"  r="1.8" fill="#00e5ff" filter="url(#tinyGlow)" opacity="0.6" />
-      <circle cx="240" cy="90"  r="1.5" fill="#00e5ff" filter="url(#tinyGlow)" opacity="0.4" />
+      <circle cx="160" cy="88" r="2" fill="#00e5ff" filter="url(#tinyGlow)" opacity="0.8" />
+      <circle cx="200" cy="86" r="1.8" fill="#00e5ff" filter="url(#tinyGlow)" opacity="0.6" />
+      <circle cx="240" cy="90" r="1.5" fill="#00e5ff" filter="url(#tinyGlow)" opacity="0.4" />
     </g>
 
     {/* ══════════════════════════════════════════ */}
@@ -235,28 +235,28 @@ const EngineVisual = () => (
       <path d="M385,340 L385,355" stroke="#167050" strokeWidth="0.6" fill="none" />
 
       {/* 트레이스 노드 점들 */}
-      {[[292,278],[320,278],[320,295],[350,295],[305,290],[305,310],[330,310],[330,325],
-        [380,278],[410,295],[365,295],[365,315],[390,315],[315,320],[315,340],[340,340],
-        [400,310],[400,335],[360,340],[360,355],[395,355],[345,325],[345,345],
-        [300,305],[300,318],[370,280],[370,292],[395,300],[395,312],[310,345],[385,340],[385,355]
-      ].map(([x,y],i) => <circle key={`n${i}`} cx={x} cy={y} r="1.8" fill="#3aaa7a" />)}
+      {[[292, 278], [320, 278], [320, 295], [350, 295], [305, 290], [305, 310], [330, 310], [330, 325],
+      [380, 278], [410, 295], [365, 295], [365, 315], [390, 315], [315, 320], [315, 340], [340, 340],
+      [400, 310], [400, 335], [360, 340], [360, 355], [395, 355], [345, 325], [345, 345],
+      [300, 305], [300, 318], [370, 280], [370, 292], [395, 300], [395, 312], [310, 345], [385, 340], [385, 355]
+      ].map(([x, y], i) => <circle key={`n${i}`} cx={x} cy={y} r="1.8" fill="#3aaa7a" />)}
 
       {/* ── 메인 CPU 칩 ── */}
       <rect x="325" y="290" width="42" height="32" rx="3" fill="#1a1e2e" stroke="#3a4a6a" strokeWidth="1" />
       {/* CPU 핀 — 윗변 */}
-      {[329,335,341,347,353,359].map((x,i) => <rect key={`ct${i}`} x={x} y="287" width="3" height="5" rx="1" fill="#4a6a8a" />)}
+      {[329, 335, 341, 347, 353, 359].map((x, i) => <rect key={`ct${i}`} x={x} y="287" width="3" height="5" rx="1" fill="#4a6a8a" />)}
       {/* CPU 핀 — 아랫변 */}
-      {[329,335,341,347,353,359].map((x,i) => <rect key={`cb${i}`} x={x} y="320" width="3" height="5" rx="1" fill="#4a6a8a" />)}
+      {[329, 335, 341, 347, 353, 359].map((x, i) => <rect key={`cb${i}`} x={x} y="320" width="3" height="5" rx="1" fill="#4a6a8a" />)}
       {/* CPU 핀 — 왼쪽 */}
-      {[293,299,305].map((y,i) => <rect key={`cl${i}`} x="322" y={y} width="5" height="3" rx="1" fill="#4a6a8a" />)}
+      {[293, 299, 305].map((y, i) => <rect key={`cl${i}`} x="322" y={y} width="5" height="3" rx="1" fill="#4a6a8a" />)}
       {/* CPU 핀 — 오른쪽 */}
-      {[293,299,305].map((y,i) => <rect key={`cr${i}`} x="365" y={y} width="5" height="3" rx="1" fill="#4a6a8a" />)}
+      {[293, 299, 305].map((y, i) => <rect key={`cr${i}`} x="365" y={y} width="5" height="3" rx="1" fill="#4a6a8a" />)}
       {/* CPU 다이 중앙 */}
       <rect x="334" y="298" width="24" height="16" rx="2" fill="#2a3050" stroke="#5a7aaa" strokeWidth="0.8" />
-      <rect x="337" y="301" width="8"  height="4"  rx="1" fill="rgba(90,150,200,0.5)" />
-      <rect x="347" y="301" width="6"  height="4"  rx="1" fill="rgba(90,150,200,0.4)" />
-      <rect x="337" y="307" width="12" height="3"  rx="1" fill="rgba(90,150,200,0.35)" />
-      <rect x="351" y="306" width="5"  height="5"  rx="1" fill="rgba(90,150,200,0.45)" />
+      <rect x="337" y="301" width="8" height="4" rx="1" fill="rgba(90,150,200,0.5)" />
+      <rect x="347" y="301" width="6" height="4" rx="1" fill="rgba(90,150,200,0.4)" />
+      <rect x="337" y="307" width="12" height="3" rx="1" fill="rgba(90,150,200,0.35)" />
+      <rect x="351" y="306" width="5" height="5" rx="1" fill="rgba(90,150,200,0.45)" />
 
       {/* ── 작은 칩들 ── */}
       {/* 칩 A */}
@@ -279,7 +279,7 @@ const EngineVisual = () => (
       {/* ── LED 디테일 ── */}
       <circle cx="418" cy="272" r="2.2" fill="#00e5ff" filter="url(#tinyGlow)" />
       <circle cx="425" cy="272" r="2.2" fill="#44ff88" filter="url(#tinyGlow)" opacity="0.85" />
-      <circle cx="418" cy="362" r="2"   fill="#ff6644" filter="url(#tinyGlow)" opacity="0.8" />
+      <circle cx="418" cy="362" r="2" fill="#ff6644" filter="url(#tinyGlow)" opacity="0.8" />
     </g>
 
     {/* ══════════════════════════════════════════ */}
@@ -290,11 +290,11 @@ const EngineVisual = () => (
       <rect x="60" y="348" width="90" height="18" rx="3" fill="url(#heatSinkG)" stroke="#5a8a9a" strokeWidth="1" />
       <rect x="60" y="348" width="90" height="6" rx="3" fill="rgba(255,255,255,0.06)" />
       {/* 핀 — 10개 */}
-      {Array.from({length:10}).map((_,i) => {
-        const x = 68 + i*8;
+      {Array.from({ length: 10 }).map((_, i) => {
+        const x = 68 + i * 8;
         return <g key={`hp${i}`}>
           <rect x={x} y="318" width="5" height="32" rx="2" fill="url(#heatPinG)" stroke="#5a9aaa" strokeWidth="0.6" />
-          <rect x={x} y="318" width="5" height="4"  rx="2" fill="rgba(255,255,255,0.1)" />
+          <rect x={x} y="318" width="5" height="4" rx="2" fill="rgba(255,255,255,0.1)" />
         </g>;
       })}
       {/* 베이스 아래 그림자 강화 */}
@@ -310,10 +310,10 @@ const EngineVisual = () => (
       <rect x="415" y="175" width="70" height="10" rx="5" fill="rgba(255,255,255,0.05)" />
       {/* 내부 커넥터 슬롯 — 윗줄 */}
       <rect x="422" y="190" width="56" height="10" rx="2" fill="#111d2e" stroke="#2a3a55" strokeWidth="0.6" />
-      {[424,431,438,445,452,459,466].map((x,i) => <rect key={`ms1-${i}`} x={x} y="192" width="4" height="6" rx="1" fill="#2a3a55" stroke="#3a5070" strokeWidth="0.4" />)}
+      {[424, 431, 438, 445, 452, 459, 466].map((x, i) => <rect key={`ms1-${i}`} x={x} y="192" width="4" height="6" rx="1" fill="#2a3a55" stroke="#3a5070" strokeWidth="0.4" />)}
       {/* 내부 커넥터 슬롯 — 아랫줄 */}
       <rect x="422" y="206" width="56" height="10" rx="2" fill="#111d2e" stroke="#2a3a55" strokeWidth="0.6" />
-      {[424,431,438,445,452,459,466].map((x,i) => <rect key={`ms2-${i}`} x={x} y="208" width="4" height="6" rx="1" fill="#2a3a55" stroke="#3a5070" strokeWidth="0.4" />)}
+      {[424, 431, 438, 445, 452, 459, 466].map((x, i) => <rect key={`ms2-${i}`} x={x} y="208" width="4" height="6" rx="1" fill="#2a3a55" stroke="#3a5070" strokeWidth="0.4" />)}
       {/* 모듈 라벨 영역 */}
       <rect x="422" y="220" width="56" height="4" rx="1" fill="rgba(255,255,255,0.04)" />
       {/* LED */}
@@ -337,10 +337,10 @@ export default function SimvexLanding({ onStart, onLab, onTest }) {
 
   // Study 클릭 시에도 학습페이지로
   const handleNav = (item) => {
-      if (item === "CAD") {
-    alert("페이지 준비중입니다");
-    return;
-  }
+    if (item === "CAD") {
+      alert("페이지 준비중입니다");
+      return;
+    }
     setActiveNav(item);
     if (item === "Study") onStart();
     if (item === "Lab") onLab?.();
@@ -348,9 +348,9 @@ export default function SimvexLanding({ onStart, onLab, onTest }) {
   };
 
   const cards = [
-    { icon: <Icon3D />,        title: "실감 나는 3D 학습",  desc: "실제 엔진과 동일한 구조로 제공되는 3D 모델을 통해 학습 과정을 더 깊게 체험하세요." },
-    { icon: <IconAI />,        title: "AI 맞춤형 가이드",   desc: "AI 기반의 맞춤형 학습 경험을 통해 학습자의 수준에 맞게 최적화된 도움을 받습니다." },
-    { icon: <IconCommunity />, title: "커뮤니티와 협업",    desc: "동료 학습자와의 협업과 토론을 통해 실험 및 프로젝트를 함께 진행할 수 있습니다." },
+    { icon: <Icon3D />, title: "실감 나는 3D 학습", desc: "실제 엔진과 동일한 구조로 제공되는 3D 모델을 통해 학습 과정을 더 깊게 체험하세요." },
+    { icon: <IconAI />, title: "AI 맞춤형 가이드", desc: "AI 기반의 맞춤형 학습 경험을 통해 학습자의 수준에 맞게 최적화된 도움을 받습니다." },
+    { icon: <IconCommunity />, title: "커뮤니티와 협업", desc: "동료 학습자와의 협업과 토론을 통해 실험 및 프로젝트를 함께 진행할 수 있습니다." },
   ];
 
   return (

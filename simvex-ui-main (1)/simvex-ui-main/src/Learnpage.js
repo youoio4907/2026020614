@@ -147,6 +147,9 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   const startX = useRef(0);
   const scrollLeft = useRef(0);
 
+  /* [추가] 윤곽선 토글 상태 */
+  const [showOutlines, setShowOutlines] = useState(false);
+
   const onMouseDown = useCallback((e) => {
     if (e.target.tagName === "TEXTAREA") return;
     isDragging.current = true;
@@ -677,29 +680,73 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                     {/* 중앙: 3D 뷰어 */}
                     <div className={`viewer-3d${(!showInfoPanel || !showProductPanel) ? " expanded" : ""}`}>
                       <div className="viewer-3d-inner">
-                        <div className="viewer-help">
-                          <button className="viewer-help-btn" type="button" aria-label="3D 뷰어 사용법">?</button>
-                          <div className="viewer-help-tooltip">
-                            <div className="viewer-help-title">3D 뷰어 사용법</div>
-                            <div className="viewer-help-line">좌클릭 : 화면 회전</div>
-                            <div className="viewer-help-line">우클릭 : 화면 이동</div>
-                            <div className="viewer-help-line">휠 : 줌 인/아웃</div>
-                          </div>
-                        </div>
+        
+        {/* [수정] 버튼들을 감싸는 컨테이너 추가 (기존 viewer-help 위치) */}
+        <div className="viewer-controls-top-left" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, display: 'flex', gap: '10px' }}>
+          
+          {/* [추가] 윤곽선 토글 버튼 */}
+          <button 
+            className={`viewer-help-btn ${showOutlines ? "active" : ""}`} 
+            onClick={() => setShowOutlines(!showOutlines)}
+            title="부품 윤곽선 보기/숨기기"
+          >
+            {/* 큐브 아이콘 (윤곽선 표현) */}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={showOutlines ? "#00e5ff" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </button>
 
-                        {selectedModel?.modelUrl ? (
-                          <ThreeViewer
-                            modelUrl={normalizeModelUrl(selectedModel)}
-                            parts={parts}
-                            selectedPartKey={selectedPartKey}
-                            assemblyProgress={assemblyProgress}
-                            onPartClick={handlePartSelect}
-                            onAssemblyProgressChange={setAssemblyProgress} // [수정] 추가됨
-                          />
-                        ) : (
-                          <ViewerEngineSVG />
-                        )}
-                      </div>
+          {/* ▼▼▼ [2. 새로 추가할 새로고침 버튼] ▼▼▼ */}
+      <button className="viewer-help-btn" 
+        title="새로고침 (기능 없음)"
+        onClick={() => console.log("새로고침 버튼 클릭됨")} 
+      >
+        {/* 새로고침 아이콘 SVG */}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M23 4v6h-6"></path>
+          <path d="M1 20v-6h6"></path>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 1 8.49 15"></path>
+        </svg>
+      </button>
+      {/* ▲▲▲ [추가 끝] ▲▲▲ */}
+
+          {/* [기존] 도움말 버튼 (위치 이동 및 스타일 유지) */}
+          {/*<div className="viewer-help" style={{ position: 'relative' }}> */}
+          <div className="viewer-help"> 
+            <button 
+              className="viewer-help-btn" 
+              type="button" 
+              aria-label="3D 뷰어 사용법"
+              style={{ /* 기존 CSS 클래스가 적용되지만, 인라인 스타일로 레이아웃 보정 가능 */ }}
+            >
+              ?
+            </button>
+            <div className="viewer-help-tooltip">
+              <div className="viewer-help-title">3D 뷰어 사용법</div>
+              <div className="viewer-help-line">좌클릭 : 화면 회전</div>
+              <div className="viewer-help-line">우클릭 : 화면 이동</div>
+              <div className="viewer-help-line">휠 : 줌 인/아웃</div>
+            </div>
+          </div>
+
+        </div>
+
+        {selectedModel?.modelUrl ? (
+          <ThreeViewer
+            modelUrl={normalizeModelUrl(selectedModel)}
+            parts={parts}
+            selectedPartKey={selectedPartKey}
+            assemblyProgress={assemblyProgress}
+            onPartClick={handlePartSelect}
+            onAssemblyProgressChange={setAssemblyProgress}
+            showOutlines={showOutlines} /* [추가] props 전달 */
+          />
+        ) : (
+          <ViewerEngineSVG />
+        )}
+      </div>
                     </div>
 
                     {/* 조립/분해 슬라이더 */}

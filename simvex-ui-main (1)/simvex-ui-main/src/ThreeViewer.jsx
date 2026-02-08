@@ -20,6 +20,7 @@ export default function ThreeViewer({
   assemblyProgress = 100,
   onPartClick,
   onAssemblyProgressChange,
+  showOutlines = false, // <--- 여기에 추가
 }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -273,6 +274,37 @@ export default function ThreeViewer({
       console.log(`[ThreeViewer1] Model loaded and normalized: ${modelUrl}`);
     });
   }, [modelUrl]);
+
+  // ---------------------------------------------------------
+  // [추가] 윤곽선(Edge) 토글 로직
+  // ---------------------------------------------------------
+  useEffect(() => {
+    const model = sceneRef.current?.getObjectByName("loadedModel");
+    if (!model) return;
+
+    model.traverse((child) => {
+      if (child.isMesh) {
+        // 이미 외곽선 객체가 있는지 확인
+        let outline = child.userData.outlineLine;
+
+        if (!outline && showOutlines) {
+          // 외곽선이 없고, 켜야 한다면 생성 (최초 1회)
+          const edges = new THREE.EdgesGeometry(child.geometry, 15); // 15도는 임계값 (조절 가능)
+          const material = new THREE.LineBasicMaterial({ color: 0x00e5ff, opacity: 0.5, transparent: true });
+          outline = new THREE.LineSegments(edges, material);
+          
+          // 원본 메쉬에 자식으로 추가하여 같이 움직이게 함
+          child.add(outline);
+          child.userData.outlineLine = outline;
+        }
+
+        // 가시성 토글
+        if (outline) {
+          outline.visible = showOutlines;
+        }
+      }
+    });
+  }, [showOutlines, isModelReady]); // showOutlines나 모델 로드 상태가 바뀔 때 실행
 
   // ═══ [1] 데이터 매핑 (Parts 연결) ═══
   useEffect(() => {
