@@ -39,9 +39,9 @@ export default function ExamPage({
     try {
       const ids = selectedModels.map((m) => m.id).join(",");
       const res = await fetch(`/api/models/exam?modelIds=${ids}`);
-      
+
       if (!res.ok) throw new Error("문제를 불러오는데 실패했습니다.");
-      
+
       const data = await res.json();
       setQuestions(data); // DB 데이터: { question, options, answer, modelTitle ... }
 
@@ -141,14 +141,14 @@ export default function ExamPage({
     // 가장 오답이 많은 모델 찾기
     let maxWrong = -1;
     let worstModelName = null;
-    
+
     Object.entries(wrongCounts).forEach(([title, count]) => {
       if (count > maxWrong) {
         maxWrong = count;
         worstModelName = title;
       }
     });
-    
+
     return worstModelName;
   }, [questions, userAnswers]);
 
@@ -165,12 +165,6 @@ export default function ExamPage({
           <nav className="nav">
             <div className="inner">
               <div className="nav-logo" onClick={onHome}>
-                <div className="nav-logo-icon">
-                  <svg viewBox="0 0 18 18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                    <circle cx="9" cy="9" r="3" />
-                    <path d="M9 2v2M9 14v2M2 9h2M14 9h2" />
-                  </svg>
-                </div>
                 <span className="nav-logo-text">SIMVEX</span>
               </div>
               <div className="nav-links">
@@ -205,7 +199,7 @@ export default function ExamPage({
                 <h2 className="exam-start-title">{field} 모의고사</h2>
 
                 <div className="exam-selected-products">
-                  <div className="exam-selected-label">선택된 완제품</div>
+                  <div className="exam-selected-label">선택된 모델</div>
                   <div className="exam-selected-list">
                     {selectedModels.map((m, i) => (
                       <span key={i}>
@@ -228,7 +222,7 @@ export default function ExamPage({
                 </div>
 
                 <p className="exam-start-desc">
-                  선택한 완제품에 대한 종합 문제가 출제됩니다.
+                  선택한 모델에 대한 종합 문제가 출제됩니다.
                   <br />
                   제한 시간 내에 최선을 다해 풀어보세요!
                 </p>
@@ -238,7 +232,7 @@ export default function ExamPage({
                 </button>
 
                 <button className="exam-back-btn" onClick={onBack} disabled={examState === "loading"}>
-                  완제품 다시 선택
+                  모델 다시 선택
                 </button>
               </div>
             </div>
@@ -299,11 +293,11 @@ export default function ExamPage({
                     {/* 모델 이름이 있으면 작게 표시 */}
                     {q.modelTitle && (
                       <span style={{ fontSize: "0.8em", color: "#64748b", marginLeft: "10px", fontWeight: "normal" }}>
-                         | {q.modelTitle}
+                        | {q.modelTitle}
                       </span>
                     )}
                   </div>
-                  
+
                   {/* DB 데이터: question */}
                   <div className="exam-question-text">{q.question}</div>
 
@@ -347,9 +341,8 @@ export default function ExamPage({
                   {questions.map((_, i) => (
                     <button
                       key={i}
-                      className={`exam-q-num${currentQ === i ? " active" : ""}${
-                        userAnswers[i] !== undefined ? " answered" : ""
-                      }`}
+                      className={`exam-q-num${currentQ === i ? " active" : ""}${userAnswers[i] !== undefined ? " answered" : ""
+                        }`}
                       onClick={() => goToQuestion(i)}
                     >
                       {i + 1}
@@ -435,7 +428,7 @@ export default function ExamPage({
                     marginTop: "24px",
                     marginBottom: "10px",
                     padding: "16px",
-                    background: "rgba(239, 68, 68, 0.1)", 
+                    background: "rgba(239, 68, 68, 0.1)",
                     border: "1px solid rgba(239, 68, 68, 0.3)",
                     borderRadius: "8px",
                     maxWidth: "400px",

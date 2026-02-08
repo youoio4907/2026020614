@@ -14,7 +14,7 @@ export default function App() {
   const [selectedField, setSelectedField] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
   const [examField, setExamField] = useState(null); // 시험 분야
-  const [examModels, setExamModels] = useState([]); // 시험 완제품들 (배열)
+  const [examModels, setExamModels] = useState([]); // 시험 모델들 (배열)
 
   // Test 페이지 (모의고사)
   if (page === "exam") {
@@ -31,7 +31,7 @@ export default function App() {
     );
   }
 
-  // 시험 완제품 선택 페이지
+  // 시험 모델 선택 페이지
   if (page === "examProductSelect") {
     return (
       <ExamProductSelectPage
@@ -84,13 +84,13 @@ export default function App() {
         onLab={() => setPage("workflow")}
         onTest={() => setPage("examFieldSelect")}
 
-        // ✅ 추가: 완제품 선택(제품 리스트)로 돌아가기
+        // ✅ 추가: 모델 선택(모델 리스트)로 돌아가기
         onBack={() => setPage("productList")} 
       />
     );
   }
 
-  // 제품 목록 페이지
+  // 모델 목록 페이지
   if (page === "productList") {
     return (
       <ProductListPage

@@ -524,12 +524,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
         <nav className="nav">
           <div className="inner">
             <div className="nav-logo" onClick={onHome}>
-              <div className="nav-logo-icon">
-                <svg viewBox="0 0 18 18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="9" cy="9" r="3" />
-                  <path d="M9 2v2M9 14v2M2 9h2M14 9h2" />
-                </svg>
-              </div>
+
               <span className="nav-logo-text">SIMVEX</span>
             </div>
             <div className="nav-links">
@@ -650,20 +645,20 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                   </div>
                 ) : (
                   <div className="viewer-body-row">
-                    {/* 왼쪽 토글 (완제품 개요) */}
+                    {/* 왼쪽 토글 (모델 개요) */}
                     {!showProductPanel && (
-                      <button className="viewer-toggle-btn-side left" onClick={() => setShowProductPanel(true)} title="완제품 개요 보기">
+                      <button className="viewer-toggle-btn-side left" onClick={() => setShowProductPanel(true)} title="모델 개요 보기">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M6 2l6 6-6 6" />
                         </svg>
                       </button>
                     )}
 
-                    {/* 좌측: 완제품 개요 (DB 연동 + AI 요약 제거) */}
+                    {/* 좌측: 모델 개요 (DB 연동 + AI 요약 제거) */}
                     {showProductPanel && (
                       <div className="viewer-product">
                         <div className="viewer-product-header">
-                          <div className="viewer-product-title">완제품 개요</div>
+                          <div className="viewer-product-title">모델 개요</div>
                           <button className="viewer-info-close" onClick={() => setShowProductPanel(false)}>✕</button>
                         </div>
                         <div className="viewer-product-body">

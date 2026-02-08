@@ -316,11 +316,7 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
         <nav className="nav">
           <div className="inner">
             <div className="nav-logo" onClick={onHome}>
-              <div className="nav-logo-icon">
-                <svg viewBox="0 0 18 18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="9" cy="9" r="3" /><path d="M9 2v2M9 14v2M2 9h2M14 9h2" />
-                </svg>
-              </div>
+              
               <span className="nav-logo-text">SIMVEX</span>
             </div>
             <div className="nav-links">

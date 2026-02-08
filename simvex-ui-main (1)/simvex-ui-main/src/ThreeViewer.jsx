@@ -41,17 +41,17 @@ export default function ThreeViewer({
   const [isModelReady, setIsModelReady] = useState(false);
 
   const DEFAULT_POS = { x: 3, y: 2, z: 5 };
-  const currentModelName = useMemo(() => modelUrl ? modelUrl.split('/').pop().split('.')[0] : "default",[modelUrl]);
-  
- // ═══ 2. 저장 로직 (useCallback으로 메모리 효율화) ═══
+  const currentModelName = useMemo(() => modelUrl ? modelUrl.split('/').pop().split('.')[0] : "default", [modelUrl]);
+
+  // ═══ 2. 저장 로직 (useCallback으로 메모리 효율화) ═══
   const saveSession = useCallback(() => {
-    if (!cameraRef.current || !controlsRef.current || !isModelReady){console.error("❌ 카메라나 컨트롤이 없습니다!"); return;}
-    
+    if (!cameraRef.current || !controlsRef.current || !isModelReady) { console.error("❌ 카메라나 컨트롤이 없습니다!"); return; }
+
     const sessionObj = {
       camera: {
         position: cameraRef.current.position.clone(),
         target: controlsRef.current.target.clone(),
-        zoom: cameraRef.current.zoom 
+        zoom: cameraRef.current.zoom
       },
       progress: assemblyProgress, // 분해도 저장
       lastSeen: new Date().toISOString()
@@ -88,7 +88,7 @@ export default function ThreeViewer({
     if (!isModelReady || !cameraRef.current || !controlsRef.current) return;
 
     const rawData = localStorage.getItem(`viewer_${currentModelName}`);
-    
+
     if (rawData) {
       const data = JSON.parse(rawData);
       const { position, target, zoom } = data.camera;
@@ -96,14 +96,14 @@ export default function ThreeViewer({
       cameraRef.current.position.set(position.x, position.y, position.z);
       controlsRef.current.target.set(target.x, target.y, target.z);
       cameraRef.current.zoom = zoom || 1;
-      
-      cameraRef.current.updateProjectionMatrix(); 
+
+      cameraRef.current.updateProjectionMatrix();
       controlsRef.current.update();
-      
+
       // 저장된 분해도가 있으면 복구 (부모 상태 업데이트)
       if (data.progress !== undefined && onAssemblyProgressChange) {
-         console.log(`[ThreeViewer] ${currentModelName} 상태 복구: 분해도 ${data.progress}`);
-         onAssemblyProgressChange(data.progress);
+        console.log(`[ThreeViewer] ${currentModelName} 상태 복구: 분해도 ${data.progress}`);
+        onAssemblyProgressChange(data.progress);
       }
 
     } else {
@@ -111,7 +111,7 @@ export default function ThreeViewer({
       controlsRef.current.target.set(0, 0, 0);
       controlsRef.current.update();
     }
-  }, [isModelReady, currentModelName]); 
+  }, [isModelReady, currentModelName]);
 
   // ═══ 초기 설정 ═══
   useEffect(() => {
@@ -123,13 +123,13 @@ export default function ThreeViewer({
     sceneRef.current = scene;
 
     // Camera 생성
-    const camera = new THREE.PerspectiveCamera(50,mountRef.current.clientWidth/mountRef.current.clientHeight,0.1,1000);
+    const camera = new THREE.PerspectiveCamera(50, mountRef.current.clientWidth / mountRef.current.clientHeight, 0.1, 1000);
     camera.position.set(DEFAULT_POS.x, DEFAULT_POS.y, DEFAULT_POS.z);
     cameraRef.current = camera;
 
     // Renderer 생성
-    const renderer = new THREE.WebGLRenderer({ 
-      antialias: true, 
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
       alpha: true,
       preserveDrawingBuffer: true
     });
@@ -227,7 +227,7 @@ export default function ThreeViewer({
       const data = JSON.parse(rawData);
       const { zoom } = data.camera;
       cameraRef.current.zoom = zoom || 1;
-      cameraRef.current.updateProjectionMatrix(); 
+      cameraRef.current.updateProjectionMatrix();
       controlsRef.current.update();
     }
   }, [isModelReady, currentModelName]);
@@ -250,7 +250,7 @@ export default function ThreeViewer({
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 2 / maxDim; 
+      const scale = 2 / maxDim;
       model.scale.setScalar(scale);
 
       const center = box.getCenter(new THREE.Vector3());
@@ -292,7 +292,7 @@ export default function ThreeViewer({
           const edges = new THREE.EdgesGeometry(child.geometry, 15); // 15도는 임계값 (조절 가능)
           const material = new THREE.LineBasicMaterial({ color: 0x00e5ff, opacity: 0.5, transparent: true });
           outline = new THREE.LineSegments(edges, material);
-          
+
           // 원본 메쉬에 자식으로 추가하여 같이 움직이게 함
           child.add(outline);
           child.userData.outlineLine = outline;
@@ -334,7 +334,7 @@ export default function ThreeViewer({
         if (logicalPart) {
           child.userData.logicalPart = logicalPart;
           child.userData.partData = partData;
-          
+
           if (!logicalPartsRef.current.has(logicalPart.name)) {
             logicalPartsRef.current.set(logicalPart.name, logicalPart);
             originalPositionsRef.current.set(logicalPart.name, logicalPart.position.clone());
@@ -363,8 +363,8 @@ export default function ThreeViewer({
         }
 
         if (partData && logicalPartsRef.current.has(current.name)) {
-          const meta = typeof partData.content === 'string' 
-            ? JSON.parse(partData.content) 
+          const meta = typeof partData.content === 'string'
+            ? JSON.parse(partData.content)
             : partData.content;
 
           const homePos = new THREE.Vector3(
@@ -372,7 +372,7 @@ export default function ThreeViewer({
             meta.position.y,
             meta.position.z
           );
-          
+
           const explodeDir = new THREE.Vector3(
             meta.explodeVector.x,
             meta.explodeVector.y,
@@ -398,8 +398,8 @@ export default function ThreeViewer({
     if (!isModelReady || logicalPartsRef.current.size === 0) return;
 
     let animationFrameId;
-    const lerpFactor = 0.05; 
-    const explosionStrength = 0.1; 
+    const lerpFactor = 0.05;
+    const explosionStrength = 0.1;
 
     const animate = () => {
       let isMoving = false;
@@ -482,7 +482,7 @@ export default function ThreeViewer({
 
         if (partData) {
           onPartClick(partData);
-        }        
+        }
       } else {
         onPartClick(null);
       }

@@ -16,7 +16,7 @@ const FIELD_TO_MODEL_TITLES = {
 };
 
 /**
- * 제품별 썸네일 SVG 아이콘
+ *모델별 썸네일 SVG 아이콘
  */
 const V4EngineIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
@@ -170,7 +170,7 @@ const DroneIcon = () => (
   </svg>
 );
 
-// 제품명 -> 아이콘 매핑
+// 모델명 -> 아이콘 매핑
 const PRODUCT_ICONS = {
   "V4_Engine": V4EngineIcon,
   "Robot_Arm": RobotArmIcon,
@@ -181,7 +181,7 @@ const PRODUCT_ICONS = {
   "Drone": DroneIcon,
 };
 
-// 제품명 -> 한글 설명 매핑
+// 모델명 -> 한글 설명 매핑
 const PRODUCT_DESCRIPTIONS = {
   "V4_Engine": "4기통 엔진의 구조와 작동 원리를 학습하세요",
   "Robot_Arm": "산업용 로봇 팔의 관절과 움직임을 탐구하세요",
@@ -228,12 +228,24 @@ export default function ProductListPage({ field, onHome, onBack, onLearn, onLab,
       alive = false;
     };
   }, []);
-
+/*
   const filteredModels = useMemo(() => {
     const allow = FIELD_TO_MODEL_TITLES[field] || null;
     if (!allow) return models;
     if (allow.length === 0) return [];
     return models.filter((m) => allow.includes(m.title));
+  }, [models, field]);
+*/
+
+  const filteredModels = useMemo(() => {
+    const allow = FIELD_TO_MODEL_TITLES[field];
+    if (!allow) return models;
+    if (allow.length === 0) return [];
+
+    // ⭐ 순서 고정 핵심 로직
+    return allow
+      .map(title => models.find(m => m.title === title))
+      .filter(Boolean);
   }, [models, field]);
 
   return (
@@ -247,12 +259,6 @@ export default function ProductListPage({ field, onHome, onBack, onLearn, onLab,
         <nav className="nav">
           <div className="inner">
             <div className="nav-logo" onClick={onHome}>
-              <div className="nav-logo-icon">
-                <svg viewBox="0 0 18 18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="9" cy="9" r="3" />
-                  <path d="M9 2v2M9 14v2M2 9h2M14 9h2" />
-                </svg>
-              </div>
               <span className="nav-logo-text">SIMVEX</span>
             </div>
           </div>
@@ -277,7 +283,7 @@ export default function ProductListPage({ field, onHome, onBack, onLearn, onLab,
             {loading && (
               <div className="pl-status">
                 <div className="pl-spinner" />
-                <div>완제품 목록을 불러오는 중...</div>
+                <div>모델 목록을 불러오는 중...</div>
               </div>
             )}
 
@@ -290,7 +296,7 @@ export default function ProductListPage({ field, onHome, onBack, onLearn, onLab,
 
             {!loading && !errMsg && filteredModels.length === 0 && (
               <div className="pl-status">
-                <div>📦 이 분야에 등록된 완제품이 아직 없습니다.</div>
+                <div>📦 이 분야에 등록된 모델이 아직 없습니다.</div>
                 <div className="pl-hint">곧 추가될 예정입니다.</div>
               </div>
             )}
