@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback, forwardRef, useImperativeHandle } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -13,15 +13,18 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
  * @param {Function} onPartClick - 부품 클릭 핸들러
  * @param {Function} onAssemblyProgressChange - 분해도 변경 알림 핸들러
  */
-export default function ThreeViewer({
+
+// 2. 함수 선언부를 forwardRef로 감싸서 변경합니다.
+const ThreeViewer = forwardRef(({
   modelUrl,
   parts = [],
   selectedPartKey,
   assemblyProgress = 100,
   onPartClick,
   onAssemblyProgressChange,
-  showOutlines = false, // <--- 여기에 추가
-}) {
+  showOutlines = false,
+}, ref) => { // <--- props와 ref를 인자로 받습니다.
+
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -42,6 +45,23 @@ export default function ThreeViewer({
 
   const DEFAULT_POS = { x: 3, y: 2, z: 5 };
   const currentModelName = useMemo(() => modelUrl ? modelUrl.split('/').pop().split('.')[0] : "default", [modelUrl]);
+
+  // ▼▼▼ [핵심 추가] 부모에서 호출할 수 있는 resetView 함수 정의 ▼▼▼
+  useImperativeHandle(ref, () => ({
+    resetView: () => {
+      if (cameraRef.current && controlsRef.current) {
+        // 1. 카메라 위치 및 타겟 초기화
+        cameraRef.current.position.set(DEFAULT_POS.x, DEFAULT_POS.y, DEFAULT_POS.z);
+        controlsRef.current.target.set(0, 0, 0);
+        cameraRef.current.zoom = 1;
+        cameraRef.current.updateProjectionMatrix();
+        controlsRef.current.update();
+
+        // 2. 로컬 스토리지 저장된 시점 삭제 (초기화 후 재저장 방지)
+        localStorage.removeItem(`viewer_${currentModelName}`);
+      }
+    }
+  }));
 
   // ═══ 2. 저장 로직 (useCallback으로 메모리 효율화) ═══
   const saveSession = useCallback(() => {
@@ -552,4 +572,6 @@ export default function ThreeViewer({
       `}</style>
     </div>
   );
-}
+});
+
+export default ThreeViewer;

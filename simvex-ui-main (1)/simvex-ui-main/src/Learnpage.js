@@ -146,6 +146,26 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   const startX = useRef(0);
   const scrollLeft = useRef(0);
 
+  // ▼▼▼ [1. Ref 생성] 3D 뷰어를 제어하기 위한 ref 생성
+  const viewerRef = useRef(null);
+
+  // ▼▼▼ [2. 핸들러 구현] 초기화 버튼 클릭 시 실행될 함수
+  const handleReset = () => {
+    console.log("모델 및 뷰 초기화 중...");
+
+    // 1. UI 상태 초기화
+    setAssemblyProgress(0);      // 조립 상태로 복귀 (0: 완전 조립)
+    setSelectedPartKey(null);    // 부품 선택 해제
+    setShowOutlines(false);      // 윤곽선 끄기 (선택 사항)
+    setShowProductPanel(true);   // 모델 개요 패널 다시 보이기 (선택 사항)
+    setShowInfoPanel(true);      // 부품 설명 패널 다시 보이기 (선택 사항)
+
+    // 2. 3D 뷰어(카메라/줌) 초기화 (자식 컴포넌트 함수 호출)
+    if (viewerRef.current) {
+      viewerRef.current.resetView();
+    }
+  };
+
   /* [추가] 윤곽선 토글 상태 */
   const [showOutlines, setShowOutlines] = useState(false);
 
@@ -695,7 +715,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                           {/* ▼▼▼ [2. 새로 추가할 새로고침 버튼] ▼▼▼ */}
                           <button className="viewer-help-btn"
                             title="새로고침 (기능 없음)"
-                            onClick={() => console.log("새로고침 버튼 클릭됨")}
+                            onClick={handleReset}
                           >
                             {/* 새로고침 아이콘 SVG */}
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -729,6 +749,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
 
                         {selectedModel?.modelUrl ? (
                           <ThreeViewer
+                            ref={viewerRef}  /* <--- [4. Ref 연결] 여기에 ref 전달 필수 */
                             modelUrl={normalizeModelUrl(selectedModel)}
                             parts={parts}
                             selectedPartKey={selectedPartKey}
