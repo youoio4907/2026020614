@@ -313,6 +313,9 @@ const ThreeViewer = forwardRef(({
           const material = new THREE.LineBasicMaterial({ color: 0x00e5ff, opacity: 0.5, transparent: true });
           outline = new THREE.LineSegments(edges, material);
 
+          // ▼ 이 라인을 추가하여 레이캐스팅 대상에서 제외합니다.
+          outline.raycast = () => null;
+
           // 원본 메쉬에 자식으로 추가하여 같이 움직이게 함
           child.add(outline);
           child.userData.outlineLine = outline;

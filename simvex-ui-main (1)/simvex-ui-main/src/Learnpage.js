@@ -685,6 +685,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                           <div className="viewer-product-model-title">{fullModel.title || selectedModel.title}</div>
                           <div className="viewer-info-product-desc">
                             {fullModel.description ? fullModel.description : (fullModel.modelUrl ? `파일: ${fullModel.modelUrl}` : "설명 정보가 없습니다.")}
+
                           </div>
                           {/* AI 요약 제거됨 */}
                         </div>
@@ -714,7 +715,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
 
                           {/* ▼▼▼ [2. 새로 추가할 새로고침 버튼] ▼▼▼ */}
                           <button className="viewer-help-btn"
-                            title="새로고침 (기능 없음)"
+                            title="새로고침"
                             onClick={handleReset}
                           >
                             {/* 새로고침 아이콘 SVG */}
