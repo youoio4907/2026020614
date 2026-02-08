@@ -59,9 +59,8 @@ const PartTurbine = () => (
       return (
         <path
           key={i}
-          d={`M${20 + 3 * Math.cos(r)},${20 + 3 * Math.sin(r)} Q${20 + 9 * Math.cos(r + 0.3)},${
-            20 + 9 * Math.sin(r + 0.3)
-          } ${20 + 13 * Math.cos(r)},${20 + 13 * Math.sin(r)}`}
+          d={`M${20 + 3 * Math.cos(r)},${20 + 3 * Math.sin(r)} Q${20 + 9 * Math.cos(r + 0.3)},${20 + 9 * Math.sin(r + 0.3)
+            } ${20 + 13 * Math.cos(r)},${20 + 13 * Math.sin(r)}`}
           stroke="#a88bd4"
           strokeWidth="2.2"
           fill="none"
@@ -109,7 +108,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
 
   /* ✅ DB 데이터 상태 */
   // fullModel: DB의 모델 정보 (description 등)
-  const [fullModel, setFullModel] = useState(selectedModel || {}); 
+  const [fullModel, setFullModel] = useState(selectedModel || {});
   const [parts, setParts] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [memos, setMemos] = useState([]);
@@ -117,7 +116,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   /* 로딩/에러 상태 */
   const [partsLoading, setPartsLoading] = useState(false);
   const [partsErr, setPartsErr] = useState("");
-  
+
   /* UI 상태 */
   const [selectedPartKey, setSelectedPartKey] = useState(null);
   const [assemblyProgress, setAssemblyProgress] = useState(0); // 0 = 완전 조립, 100 = 완전 분해
@@ -351,7 +350,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     try {
       if (!selectedModel?.id) throw new Error("선택된 모델이 없습니다.");
       const meshName = selectedPart?.meshName || selectedModel?.title || null;
-      
+
       const notesObj = {
         model: { id: selectedModel.id, title: selectedModel.title },
         part: selectedPart ? { name: selectedPart.meshName, ...selectedPart.content } : null,
@@ -373,7 +372,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const answer = data.answer || data.message || "응답 없음";
-      
+
       // 서버에서 저장 완료되었으므로 UI에만 추가
       setChatMsgs((prev) => [...prev, { role: "ai", text: answer }]);
     } catch (err) {
@@ -395,7 +394,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     }
 
     const reportElement = document.getElementById("hidden-pdf-report");
-    const viewerElement = document.querySelector(".viewer-3d"); 
+    const viewerElement = document.querySelector(".viewer-3d");
 
     if (!reportElement || !viewerElement) {
       alert("리포트 생성을 위한 요소를 찾을 수 없습니다.");
@@ -403,7 +402,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
     }
 
     const btn = document.querySelector(".pdf-report-btn");
-    if(btn) btn.innerText = "이미지 캡처 중...";
+    if (btn) btn.innerText = "이미지 캡처 중...";
 
     try {
       // 1. 3D 뷰어 화면 캡처
@@ -422,7 +421,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
       // 이미지 로딩을 위해 잠시 대기 (안정성 확보)
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      if(btn) btn.innerText = "PDF 생성 중...";
+      if (btn) btn.innerText = "PDF 생성 중...";
 
       // 3. 리포트 전체 캡처 및 PDF 생성 (페이지 나누기 로직 적용)
       const canvas = await window.html2canvas(reportElement, {
@@ -433,14 +432,14 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
 
       const imgData = canvas.toDataURL("image/png");
       const { jsPDF } = window.jspdf;
-      
+
       // A4 크기 (mm)
-      const imgWidth = 210; 
-      const pageHeight = 297; 
-      
+      const imgWidth = 210;
+      const pageHeight = 297;
+
       // 캔버스 높이를 A4 비율에 맞춰 mm로 변환
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       let heightLeft = imgHeight;
       let position = 0;
 
@@ -465,7 +464,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
       console.error("PDF 생성 실패:", err);
       alert(`오류 발생: ${err.message}`);
     } finally {
-      if(btn) btn.innerText = "PDF 리포트 생성";
+      if (btn) btn.innerText = "PDF 리포트 생성";
     }
   };
 
@@ -473,16 +472,16 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   const renderPartDetail = () => {
     // DB 데이터가 없을 때 표시할 기본 UI
     if (!selectedPart || !selectedPart.content) {
-      return <div className="viewer-no-data" style={{color:"#aaa", padding:"20px"}}>부품 정보가 없습니다.</div>;
+      return <div className="viewer-no-data" style={{ color: "#aaa", padding: "20px" }}>부품 정보가 없습니다.</div>;
     }
-    
+
     // content = { description, function, material, structure ... }
     const { description, function: func, material, structure } = selectedPart.content;
 
     return (
       <div className="viewer-part-detail-new">
         {/* 부품 이름 */}
-        <div className="part-section-header" style={{ fontSize:"18px", fontWeight:"bold", marginBottom:"15px", color:"#fff" }}>
+        <div className="part-section-header" style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "15px", color: "#fff" }}>
           {selectedPart.meshName}
         </div>
 
@@ -504,7 +503,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
             <div className="part-section-content">{structure}</div>
           </div>
         )}
-         {material && (
+        {material && (
           <div className="part-section">
             <div className="part-section-title">재질</div>
             <div className="part-section-content">{material}</div>
@@ -551,11 +550,11 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
               <div className="learn-tabs-wrap">
                 <button className="learn-back-btn" onClick={onBack} title="뒤로가기">‹</button>
                 <div className="learn-tabs">
-                {tabs.map((t) => (
-                  <button key={t} className={`learn-tab${activeTab === t ? " active" : ""}`} onClick={() => handleTabClick(t)}>
-                    {t}
-                  </button>
-                ))}
+                  {tabs.map((t) => (
+                    <button key={t} className={`learn-tab${activeTab === t ? " active" : ""}`} onClick={() => handleTabClick(t)}>
+                      {t}
+                    </button>
+                  ))}
                 </div>
               </div>
               <button className="pdf-report-btn" onClick={generatePdfReport}>
@@ -572,7 +571,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                 {activeTab === "퀴즈" ? (
                   <div className="quiz-container">
                     {quizzes.length === 0 ? (
-                       <div style={{color:"#fff", padding:"40px", textAlign:"center"}}>등록된 퀴즈가 없습니다.</div>
+                      <div style={{ color: "#fff", padding: "40px", textAlign: "center" }}>등록된 퀴즈가 없습니다.</div>
                     ) : !quizFinished ? (
                       <>
                         <div className="quiz-header">
@@ -610,7 +609,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                         <div className="quiz-feedback">
                           {quizSubmitted && (
                             <div className={`quiz-feedback-box ${quizResults[quizResults.length - 1].correct ? "correct" : "wrong"}`}>
-                              {quizResults[quizResults.length - 1].correct 
+                              {quizResults[quizResults.length - 1].correct
                                 ? `✓ 정답! ${quizzes[quizIdx].explanation || ""}`
                                 : `✗ 오답. 정답은 ${quizzes[quizIdx].options[quizzes[quizIdx].answer]}입니다. ${quizzes[quizIdx].explanation || ""}`
                               }
@@ -638,11 +637,11 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                           <span className="quiz-score-total">{quizzes.length}</span>
                         </div>
                         <div className="quiz-final-message">
-                          {quizResults.filter((r) => r.correct).length === quizzes.length 
-                            ? "완벽합니다! 🎉" 
+                          {quizResults.filter((r) => r.correct).length === quizzes.length
+                            ? "완벽합니다! 🎉"
                             : quizResults.filter((r) => r.correct).length >= quizzes.length * 0.6
-                            ? "잘하셨습니다! 👏"
-                            : "다시 도전해보세요! 💪"
+                              ? "잘하셨습니다! 👏"
+                              : "다시 도전해보세요! 💪"
                           }
                         </div>
                         <button className="quiz-btn-restart" onClick={resetQuiz}>다시 풀기</button>
@@ -680,73 +679,73 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                     {/* 중앙: 3D 뷰어 */}
                     <div className={`viewer-3d${(!showInfoPanel || !showProductPanel) ? " expanded" : ""}`}>
                       <div className="viewer-3d-inner">
-        
-        {/* [수정] 버튼들을 감싸는 컨테이너 추가 (기존 viewer-help 위치) */}
-        <div className="viewer-controls-top-left" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, display: 'flex', gap: '10px' }}>
-          
-          {/* [추가] 윤곽선 토글 버튼 */}
-          <button 
-            className={`viewer-help-btn ${showOutlines ? "active" : ""}`} 
-            onClick={() => setShowOutlines(!showOutlines)}
-            title="부품 윤곽선 보기/숨기기"
-          >
-            {/* 큐브 아이콘 (윤곽선 표현) */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={showOutlines ? "#00e5ff" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-              <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
-          </button>
 
-          {/* ▼▼▼ [2. 새로 추가할 새로고침 버튼] ▼▼▼ */}
-      <button className="viewer-help-btn" 
-        title="새로고침 (기능 없음)"
-        onClick={() => console.log("새로고침 버튼 클릭됨")} 
-      >
-        {/* 새로고침 아이콘 SVG */}
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M23 4v6h-6"></path>
-          <path d="M1 20v-6h6"></path>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 1 8.49 15"></path>
-        </svg>
-      </button>
-      {/* ▲▲▲ [추가 끝] ▲▲▲ */}
+                        {/* [수정] 버튼들을 감싸는 컨테이너 추가 (기존 viewer-help 위치) */}
+                        <div className="viewer-controls-top-left" style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, display: 'flex', gap: '10px' }}>
 
-          {/* [기존] 도움말 버튼 (위치 이동 및 스타일 유지) */}
-          {/*<div className="viewer-help" style={{ position: 'relative' }}> */}
-          <div className="viewer-help"> 
-            <button 
-              className="viewer-help-btn" 
-              type="button" 
-              aria-label="3D 뷰어 사용법"
-              style={{ /* 기존 CSS 클래스가 적용되지만, 인라인 스타일로 레이아웃 보정 가능 */ }}
-            >
-              ?
-            </button>
-            <div className="viewer-help-tooltip">
-              <div className="viewer-help-title">3D 뷰어 사용법</div>
-              <div className="viewer-help-line">좌클릭 : 화면 회전</div>
-              <div className="viewer-help-line">우클릭 : 화면 이동</div>
-              <div className="viewer-help-line">휠 : 줌 인/아웃</div>
-            </div>
-          </div>
+                          {/* [추가] 윤곽선 토글 버튼 */}
+                          <button
+                            className={`viewer-help-btn ${showOutlines ? "active" : ""}`}
+                            onClick={() => setShowOutlines(!showOutlines)}
+                            title="부품 윤곽선 보기/숨기기"
+                          >
+                            {/* 큐브 아이콘 (윤곽선 표현) */}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={showOutlines ? "#00e5ff" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                          </button>
 
-        </div>
+                          {/* ▼▼▼ [2. 새로 추가할 새로고침 버튼] ▼▼▼ */}
+                          <button className="viewer-help-btn"
+                            title="새로고침 (기능 없음)"
+                            onClick={() => console.log("새로고침 버튼 클릭됨")}
+                          >
+                            {/* 새로고침 아이콘 SVG */}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="23 4 23 10 17 10"></polyline>
+                              <polyline points="1 20 1 14 7 14"></polyline>
+                              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                          </button>
+                          {/* ▲▲▲ [추가 끝] ▲▲▲ */}
 
-        {selectedModel?.modelUrl ? (
-          <ThreeViewer
-            modelUrl={normalizeModelUrl(selectedModel)}
-            parts={parts}
-            selectedPartKey={selectedPartKey}
-            assemblyProgress={assemblyProgress}
-            onPartClick={handlePartSelect}
-            onAssemblyProgressChange={setAssemblyProgress}
-            showOutlines={showOutlines} /* [추가] props 전달 */
-          />
-        ) : (
-          <ViewerEngineSVG />
-        )}
-      </div>
+                          {/* [기존] 도움말 버튼 (위치 이동 및 스타일 유지) */}
+                          {/*<div className="viewer-help" style={{ position: 'relative' }}> */}
+                          <div className="viewer-help">
+                            <button
+                              className="viewer-help-btn"
+                              type="button"
+                              aria-label="3D 뷰어 사용법"
+                              style={{ /* 기존 CSS 클래스가 적용되지만, 인라인 스타일로 레이아웃 보정 가능 */ }}
+                            >
+                              ?
+                            </button>
+                            <div className="viewer-help-tooltip">
+                              <div className="viewer-help-title">3D 뷰어 사용법</div>
+                              <div className="viewer-help-line">좌클릭 : 화면 회전</div>
+                              <div className="viewer-help-line">우클릭 : 화면 이동</div>
+                              <div className="viewer-help-line">휠 : 줌 인/아웃</div>
+                            </div>
+                          </div>
+
+                        </div>
+
+                        {selectedModel?.modelUrl ? (
+                          <ThreeViewer
+                            modelUrl={normalizeModelUrl(selectedModel)}
+                            parts={parts}
+                            selectedPartKey={selectedPartKey}
+                            assemblyProgress={assemblyProgress}
+                            onPartClick={handlePartSelect}
+                            onAssemblyProgressChange={setAssemblyProgress}
+                            showOutlines={showOutlines} /* [추가] props 전달 */
+                          />
+                        ) : (
+                          <ViewerEngineSVG />
+                        )}
+                      </div>
                     </div>
 
                     {/* 조립/분해 슬라이더 */}
@@ -857,7 +856,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                     {memos.map((memo, idx) => (
                       <div key={idx} className="memo-note">
                         <div className="memo-note-top">
-                          <span className="memo-note-label">Memo #{idx+1}</span>
+                          <span className="memo-note-label">Memo #{idx + 1}</span>
                           <div className="memo-note-actions">
                             <button className="memo-note-expand" onClick={() => setExpandedMemo(idx)}>↗</button>
                             <button className="memo-note-delete" onClick={() => deleteMemo(idx)}>×</button>
@@ -918,7 +917,7 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
         <div className="memo-modal-overlay" onClick={() => setExpandedMemo(null)}>
           <div className="memo-modal" onClick={(e) => e.stopPropagation()}>
             <div className="memo-modal-header">
-              <span className="memo-modal-label">Memo #{expandedMemo+1}</span>
+              <span className="memo-modal-label">Memo #{expandedMemo + 1}</span>
               <div className="memo-modal-header-actions">
                 <button className="memo-modal-delete" onClick={() => deleteMemo(expandedMemo)}>삭제</button>
                 <button className="memo-modal-close" onClick={() => setExpandedMemo(null)}>✕</button>
@@ -946,8 +945,8 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
       {/* ════════════════════════════════════════════ */}
       {/* PDF 생성용 숨겨진 리포트 템플릿 (GitHub Style)  */}
       {/* ════════════════════════════════════════════ */}
-      <div 
-        id="hidden-pdf-report" 
+      <div
+        id="hidden-pdf-report"
         style={{
           position: "absolute",
           top: "-10000px",
@@ -975,37 +974,37 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
 
         {/* 1. 사진 (Photo) */}
         <div style={{ marginBottom: "40px" }}>
-          <h2 style={{ 
-            fontSize: "24px", 
-            fontWeight: "600", 
-            borderBottom: "1px solid #d8dee4", 
-            paddingBottom: "0.3em", 
+          <h2 style={{
+            fontSize: "24px",
+            fontWeight: "600",
+            borderBottom: "1px solid #d8dee4",
+            paddingBottom: "0.3em",
             marginBottom: "16px",
             marginTop: "24px"
           }}>
             Photo
           </h2>
-          <div style={{ 
-            border: "1px solid #d0d7de", 
-            borderRadius: "6px", 
-            overflow: "hidden", 
-            backgroundColor: "#f6f8fa" 
+          <div style={{
+            border: "1px solid #d0d7de",
+            borderRadius: "6px",
+            overflow: "hidden",
+            backgroundColor: "#f6f8fa"
           }}>
-            <img 
-              id="report-screenshot-img" 
-              alt="Model Screenshot" 
-              style={{ width: "100%", height: "auto", display: "block" }} 
+            <img
+              id="report-screenshot-img"
+              alt="Model Screenshot"
+              style={{ width: "100%", height: "auto", display: "block" }}
             />
           </div>
         </div>
 
         {/* 2. 메모장 (Memo) */}
         <div style={{ marginBottom: "40px" }}>
-          <h2 style={{ 
-            fontSize: "24px", 
-            fontWeight: "600", 
-            borderBottom: "1px solid #d8dee4", 
-            paddingBottom: "0.3em", 
+          <h2 style={{
+            fontSize: "24px",
+            fontWeight: "600",
+            borderBottom: "1px solid #d8dee4",
+            paddingBottom: "0.3em",
             marginBottom: "16px",
             marginTop: "24px"
           }}>
@@ -1014,11 +1013,11 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
           {memos.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {memos.map((memo, i) => (
-                <div key={i} style={{ 
-                  border: "1px solid #d0d7de", 
-                  borderRadius: "6px", 
-                  padding: "16px", 
-                  backgroundColor: "#ffffff" 
+                <div key={i} style={{
+                  border: "1px solid #d0d7de",
+                  borderRadius: "6px",
+                  padding: "16px",
+                  backgroundColor: "#ffffff"
                 }}>
                   <div style={{ fontSize: "16px", fontWeight: "600", marginBottom: "8px", color: "#24292f" }}>
                     {memo.title || "Untitled Note"}
@@ -1036,22 +1035,22 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
 
         {/* 3. [수정됨] Q&A History Section (AI Summary 대체) */}
         <div style={{ marginBottom: "40px" }}>
-          <h2 style={{ 
-            fontSize: "24px", 
-            fontWeight: "600", 
-            borderBottom: "1px solid #d8dee4", 
-            paddingBottom: "0.3em", 
+          <h2 style={{
+            fontSize: "24px",
+            fontWeight: "600",
+            borderBottom: "1px solid #d8dee4",
+            paddingBottom: "0.3em",
             marginBottom: "16px",
             marginTop: "24px"
           }}>
             Q&A History
           </h2>
-          <div style={{ 
-            fontSize: "14px", 
-            lineHeight: "1.6", 
+          <div style={{
+            fontSize: "14px",
+            lineHeight: "1.6",
             color: "#24292f",
             backgroundColor: "#ffffff",
-            padding: "5px" 
+            padding: "5px"
           }}>
             {chatMsgs.length > 0 ? (
               chatMsgs.map((msg, idx) => (
@@ -1069,13 +1068,13 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
         </div>
 
         {/* 푸터 (GitHub Footer Style) */}
-        <div style={{ 
-          marginTop: "60px", 
-          borderTop: "1px solid #d0d7de", 
-          paddingTop: "20px", 
-          textAlign: "center", 
-          fontSize: "12px", 
-          color: "#57606a" 
+        <div style={{
+          marginTop: "60px",
+          borderTop: "1px solid #d0d7de",
+          paddingTop: "20px",
+          textAlign: "center",
+          fontSize: "12px",
+          color: "#57606a"
         }}>
           <span style={{ fontWeight: "600" }}>SIMVEX</span> &copy; 2026
         </div>

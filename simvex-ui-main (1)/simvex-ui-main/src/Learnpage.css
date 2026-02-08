@@ -2063,14 +2063,16 @@
   /* .viewer-3d::before 위로 */
 }
 
-/* ? 버튼 + 툴팁 */
-/*.viewer-help {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 50;
+/* [수정] 툴팁을 감싸는 부모 컨테이너 */
+.viewer-help {
+  position: relative;
+  /* 툴팁 위치의 기준점 */
+  display: flex;
+  /* 내부 버튼 정렬 */
+  align-items: center;
+  width: fit-content;
+  /* 내용물(버튼) 크기에 딱 맞게 조절 */
 }
-*/
 
 
 /* ? 버튼 */
@@ -2100,7 +2102,7 @@
 
 /* 툴팁 기본 숨김 */
 .viewer-help-tooltip {
-  position: relative;
+  position: absolute;
   top: 0;
   left: 38px;
   min-width: 190px;
@@ -2125,7 +2127,7 @@
 /* hover 시 표시 */
 .viewer-help:hover .viewer-help-tooltip {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0);
 }
 
 .viewer-help-title {
