@@ -499,3 +499,224 @@
   color: #2563eb;
   line-height: 1.5;
 }
+
+/* ─── 대시보드형 결과 화면 스타일 ─── */
+
+.result-dashboard-container {
+  width: 100%;
+  max-width: 1000px; /* 넓은 화면 활용 */
+  margin: 0 auto;
+  padding: 20px 0;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.result-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 30px;
+  text-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+}
+
+/* 그리드 레이아웃: 좌우 배치 */
+.result-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+  .result-dashboard-grid {
+    grid-template-columns: 1fr; /* 모바일에서는 세로 배치 */
+  }
+}
+
+/* 공통 카드 스타일 */
+.result-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.result-card-header {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+/* 왼쪽 카드: 점수 요약 */
+.result-summary-card {
+  align-items: center;
+  text-align: center;
+}
+
+.result-score-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* SVG 원형 그래프 */
+.score-circle-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+.score-circle-text {
+  font-size: 24px;
+  font-weight: bold;
+  fill: #fff;
+}
+
+.result-grade-label {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.result-message {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.result-stats-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+.stat-label { font-size: 12px; color: #64748b; }
+.stat-value { font-size: 18px; font-weight: 700; color: #fff; }
+.stat-value.text-green { color: #22c55e; }
+.stat-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); }
+
+/* 취약점 박스 */
+.weakness-box {
+  width: 100%;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+}
+.weakness-icon { font-size: 20px; }
+.weakness-content { font-size: 13px; color: #fca5a5; line-height: 1.4; }
+.weakness-content strong { color: #fff; }
+
+
+/* 오른쪽 카드: 상세 분석 */
+.result-analysis-card {
+  justify-content: flex-start;
+}
+
+.analysis-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.analysis-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.analysis-info {
+  width: 100px; /* 모델명 고정폭 */
+  display: flex;
+  flex-direction: column;
+}
+.analysis-model-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.analysis-percent {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.analysis-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.analysis-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.analysis-fraction {
+  font-size: 12px;
+  color: #64748b;
+  width: 30px;
+  text-align: right;
+}
+
+/* 하단 버튼 바 */
+.result-action-bar {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.action-btn {
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.action-btn.retry {
+  background: #2563eb;
+  color: white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+.action-btn.retry:hover { background: #1d4ed8; transform: translateY(-2px); }
+
+.action-btn.home {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.action-btn.home:hover { background: rgba(255, 255, 255, 0.15); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
