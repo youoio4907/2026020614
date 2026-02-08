@@ -1,5 +1,4 @@
-// ThreeViewer.jsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -12,6 +11,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
  * @param {string} selectedPartKey - 선택된 부품 키
  * @param {number} assemblyProgress - 조립 진행도 (0~100)
  * @param {Function} onPartClick - 부품 클릭 핸들러
+ * @param {Function} onAssemblyProgressChange - 분해도 변경 알림 핸들러
  */
 export default function ThreeViewer({
   modelUrl,
@@ -19,6 +19,7 @@ export default function ThreeViewer({
   selectedPartKey,
   assemblyProgress = 100,
   onPartClick,
+  onAssemblyProgressChange,
 }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -26,16 +27,90 @@ export default function ThreeViewer({
   const rendererRef = useRef(null);
   const controlsRef = useRef(null);
 
-  const meshesRef = useRef(new Map()); // meshName -> mesh object
+  //const meshesRef = useRef(new Map()); // meshName -> mesh object
   const originalPositionsRef = useRef(new Map()); // meshName -> original position
+  const logicalPartsRef = useRef(new Map());
+  const clickableMeshesRef = useRef([]);
 
   const raycasterRef = useRef(new THREE.Raycaster());
   const mouseRef = useRef(new THREE.Vector2());
-
   const resizeObserverRef = useRef(null);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModelReady, setIsModelReady] = useState(false);
+
+  const DEFAULT_POS = { x: 3, y: 2, z: 5 };
+  const currentModelName = useMemo(() => modelUrl ? modelUrl.split('/').pop().split('.')[0] : "default",[modelUrl]);
+  
+ // ═══ 2. 저장 로직 (useCallback으로 메모리 효율화) ═══
+  const saveSession = useCallback(() => {
+    if (!cameraRef.current || !controlsRef.current || !isModelReady){console.error("❌ 카메라나 컨트롤이 없습니다!"); return;}
+    
+    const sessionObj = {
+      camera: {
+        position: cameraRef.current.position.clone(),
+        target: controlsRef.current.target.clone(),
+        zoom: cameraRef.current.zoom 
+      },
+      progress: assemblyProgress, // 분해도 저장
+      lastSeen: new Date().toISOString()
+    };
+
+    localStorage.setItem(`viewer_${currentModelName}`, JSON.stringify(sessionObj));
+  }, [currentModelName, assemblyProgress, isModelReady]);
+
+  // ═══ 3. 저장 트리거 (Debounce 적용) ═══
+  useEffect(() => {
+    if (!controlsRef.current || !isModelReady) return;
+
+    let saveTimeout;
+    const handleControlChange = () => {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(saveSession, 300);
+    };
+
+    // 분해도 변경 시에도 저장 트리거
+    if (assemblyProgress !== undefined) {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(saveSession, 500);
+    }
+
+    controlsRef.current.addEventListener("change", handleControlChange);
+    return () => {
+      controlsRef.current?.removeEventListener("change", handleControlChange);
+      clearTimeout(saveTimeout);
+    };
+  }, [isModelReady, saveSession, assemblyProgress]);
+
+  // ═══ 4. 시점 및 상태 복구 로직 (Restore) ═══
+  useEffect(() => {
+    if (!isModelReady || !cameraRef.current || !controlsRef.current) return;
+
+    const rawData = localStorage.getItem(`viewer_${currentModelName}`);
+    
+    if (rawData) {
+      const data = JSON.parse(rawData);
+      const { position, target, zoom } = data.camera;
+
+      cameraRef.current.position.set(position.x, position.y, position.z);
+      controlsRef.current.target.set(target.x, target.y, target.z);
+      cameraRef.current.zoom = zoom || 1;
+      
+      cameraRef.current.updateProjectionMatrix(); 
+      controlsRef.current.update();
+      
+      // 저장된 분해도가 있으면 복구 (부모 상태 업데이트)
+      if (data.progress !== undefined && onAssemblyProgressChange) {
+         console.log(`[ThreeViewer] ${currentModelName} 상태 복구: 분해도 ${data.progress}`);
+         onAssemblyProgressChange(data.progress);
+      }
+
+    } else {
+      cameraRef.current.position.set(DEFAULT_POS.x, DEFAULT_POS.y, DEFAULT_POS.z);
+      controlsRef.current.target.set(0, 0, 0);
+      controlsRef.current.update();
+    }
+  }, [isModelReady, currentModelName]); 
 
   // ═══ 초기 설정 ═══
   useEffect(() => {
@@ -47,13 +122,8 @@ export default function ThreeViewer({
     sceneRef.current = scene;
 
     // Camera 생성
-    const camera = new THREE.PerspectiveCamera(
-      50,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.set(3, 2, 5);
+    const camera = new THREE.PerspectiveCamera(50,mountRef.current.clientWidth/mountRef.current.clientHeight,0.1,1000);
+    camera.position.set(DEFAULT_POS.x, DEFAULT_POS.y, DEFAULT_POS.z);
     cameraRef.current = camera;
 
     // Renderer 생성
@@ -66,7 +136,7 @@ export default function ThreeViewer({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
 
-    // ✅ 캔버스가 레이아웃에 딱 붙도록
+    // 캔버스가 레이아웃에 딱 붙도록
     renderer.domElement.style.display = "block";
 
     mountRef.current.appendChild(renderer.domElement);
@@ -81,23 +151,23 @@ export default function ThreeViewer({
     controlsRef.current = controls;
 
     // 조명 추가
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 10, 5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight.position.set(8, 8, 5);
     directionalLight.castShadow = true;
     scene.add(directionalLight);
 
-    const fillLight = new THREE.DirectionalLight(0x4a8aff, 0.3);
+    const fillLight = new THREE.DirectionalLight(0x4a8aff, 2);
     fillLight.position.set(-10, -5, -5);
     scene.add(fillLight);
 
-    // 그리드 헬퍼 (선택사항)
+    // 그리드 헬퍼
     const gridHelper = new THREE.GridHelper(10, 10, 0x444444, 0x222222);
     scene.add(gridHelper);
 
-    // ✅ mount 크기 기준으로 camera/renderer 리사이즈
+    // 리사이즈
     const resizeToMount = () => {
       if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
 
@@ -108,12 +178,10 @@ export default function ThreeViewer({
       cameraRef.current.aspect = w / h;
       cameraRef.current.updateProjectionMatrix();
 
-      // ✅ 중요: setSize(w,h) 로 "CSS 크기"까지 같이 갱신해야 패널 토글 시 꽉 찬다
       rendererRef.current.setSize(w, h);
       rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     };
 
-    // 애니메이션 루프
     let animationId;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
@@ -122,20 +190,16 @@ export default function ThreeViewer({
     };
     animate();
 
-    // ✅ 1) window resize
     const handleResize = () => resizeToMount();
     window.addEventListener("resize", handleResize);
 
-    // ✅ 2) 레이아웃 변화(패널 토글 등) 감지: ResizeObserver
     resizeObserverRef.current = new ResizeObserver(() => {
       resizeToMount();
     });
     resizeObserverRef.current.observe(mountRef.current);
 
-    // 초기 1회 보정
     resizeToMount();
 
-    // 클린업
     return () => {
       window.removeEventListener("resize", handleResize);
 
@@ -154,168 +218,215 @@ export default function ThreeViewer({
     };
   }, []);
 
+  // 줌 복구 관련 (중복 로직 방지 위해 통합된 상태)
+  useEffect(() => {
+    if (!isModelReady || !currentModelName) return;
+    const rawData = localStorage.getItem(`viewer_${currentModelName}`);
+    if (rawData) {
+      const data = JSON.parse(rawData);
+      const { zoom } = data.camera;
+      cameraRef.current.zoom = zoom || 1;
+      cameraRef.current.updateProjectionMatrix(); 
+      controlsRef.current.update();
+    }
+  }, [isModelReady, currentModelName]);
+
+
   // ═══ GLB 파일 로드 ═══
   useEffect(() => {
     if (!modelUrl || !sceneRef.current) return;
-
+    setIsModelReady(false);
     setLoading(true);
-    setError(null);
-
     const loader = new GLTFLoader();
 
-    loader.load(
-      modelUrl,
-      (gltf) => {
-        const model = gltf.scene;
+    loader.load(modelUrl, (gltf) => {
+      const existingModel = sceneRef.current.getObjectByName("loadedModel");
+      if (existingModel) sceneRef.current.remove(existingModel);
 
-        // 기존 모델 제거
-        const existingModel = sceneRef.current.getObjectByName("loadedModel");
-        if (existingModel) {
-          sceneRef.current.remove(existingModel);
+      const model = gltf.scene;
+      model.name = "loadedModel";
+
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scale = 2 / maxDim; 
+      model.scale.setScalar(scale);
+
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center.multiplyScalar(scale));
+
+      sceneRef.current.add(model);
+      setIsModelReady(true);
+
+      if (mountRef.current && cameraRef.current && rendererRef.current) {
+        const w = mountRef.current.clientWidth;
+        const h = mountRef.current.clientHeight;
+        if (w && h) {
+          cameraRef.current.aspect = w / h;
+          cameraRef.current.updateProjectionMatrix();
+          rendererRef.current.setSize(w, h);
+          rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         }
-
-        model.name = "loadedModel";
-
-        // 모든 mesh 수집 및 원본 위치 저장
-        meshesRef.current.clear();
-        originalPositionsRef.current.clear();
-
-        model.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-
-            // mesh 이름으로 매핑 (GLB의 노드 이름 사용)
-            const meshName = child.name || child.parent?.name;
-            if (meshName) {
-              meshesRef.current.set(meshName, child);
-
-              // 원본 위치 저장 (부모 기준 상대 위치)
-              originalPositionsRef.current.set(meshName, child.position.clone());
-
-              console.log(`[ThreeViewer] Mesh found: ${meshName}`);
-            }
-          }
-        });
-
-        // 모델 크기 정규화
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2 / maxDim; // 2 units 크기로 정규화
-        model.scale.setScalar(scale);
-
-        // 모델 중심 정렬
-        const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center.multiplyScalar(scale));
-
-        sceneRef.current.add(model);
-        setLoading(false);
-
-        console.log(`[ThreeViewer] Model loaded: ${modelUrl}`);
-        console.log(`[ThreeViewer] Found ${meshesRef.current.size} meshes`);
-
-        // ✅ 모델 로드 직후에도 한번 리사이즈(토글 직후 로드되는 케이스 보정)
-        if (mountRef.current && cameraRef.current && rendererRef.current) {
-          const w = mountRef.current.clientWidth;
-          const h = mountRef.current.clientHeight;
-          if (w && h) {
-            cameraRef.current.aspect = w / h;
-            cameraRef.current.updateProjectionMatrix();
-            rendererRef.current.setSize(w, h); // ✅ 여기 also false 제거
-            rendererRef.current.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-          }
-        }
-      },
-      (xhr) => {
-        const pct = xhr.total ? (xhr.loaded / xhr.total) * 100 : 0;
-        console.log(`[ThreeViewer] Loading: ${pct.toFixed(0)}%`);
-      },
-      (err) => {
-        console.error("[ThreeViewer] Load error:", err);
-        setError(`모델 로드 실패: ${err?.message || "unknown error"}`);
-        setLoading(false);
       }
-    );
+
+      setLoading(false);
+      console.log(`[ThreeViewer1] Model loaded and normalized: ${modelUrl}`);
+    });
   }, [modelUrl]);
 
-  // ═══ 조립/분해 애니메이션 ═══
+  // ═══ [1] 데이터 매핑 (Parts 연결) ═══
   useEffect(() => {
-    if (!sceneRef.current || meshesRef.current.size === 0) return;
+    const model = sceneRef.current?.getObjectByName("loadedModel");
+    if (!model || parts.length === 0) return;
 
-    const progress = assemblyProgress / 100; // 0~1
-    const explosionFactor = 1.5; // 분해 시 이동 거리 배율
+    // 기존 관리 리스트 초기화
+    logicalPartsRef.current.clear();
+    originalPositionsRef.current.clear();
+    clickableMeshesRef.current = [];
 
-    meshesRef.current.forEach((mesh, meshName) => {
-      const originalPos = originalPositionsRef.current.get(meshName);
-      if (!originalPos) return;
+    model.traverse((child) => {
+      if (child.isMesh) {
+        let current = child;
+        let logicalPart = null;
+        let partData = null;
 
-      // 분해 방향: 원점에서 바깥쪽으로
-      const explosionDir = new THREE.Vector3();
+        while (current && current !== model) {
+          partData = parts.find(p => p.meshName === current.name);
+          if (partData) {
+            logicalPart = current;
+            break;
+          }
+          current = current.parent;
+        }
 
-      // mesh의 월드 위치 기준으로 폭발 방향 계산
-      const worldPos = new THREE.Vector3();
-      mesh.getWorldPosition(worldPos);
-
-      // 중심에서 바깥쪽으로 방향 벡터
-      explosionDir.copy(worldPos).normalize();
-
-      // 방향이 0인 경우 (정확히 중심) 임의 방향 설정
-      if (explosionDir.length() < 0.01) {
-        explosionDir
-          .set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
-          .normalize();
+        if (logicalPart) {
+          child.userData.logicalPart = logicalPart;
+          child.userData.partData = partData;
+          
+          if (!logicalPartsRef.current.has(logicalPart.name)) {
+            logicalPartsRef.current.set(logicalPart.name, logicalPart);
+            originalPositionsRef.current.set(logicalPart.name, logicalPart.position.clone());
+          }
+          clickableMeshesRef.current.push(child);
+        }
       }
-
-      // 분해된 위치 = 원본 위치 + (폭발 방향 * 거리)
-      const distance = originalPos.length() * explosionFactor;
-      const explodedPos = originalPos
-        .clone()
-        .add(explosionDir.multiplyScalar(distance * (1 - progress)));
-
-      // 부드러운 보간 (ease-out)
-      mesh.position.lerp(explodedPos, 0.1);
     });
-  }, [assemblyProgress]);
+  }, [parts, modelUrl, isModelReady]);
+
+  // ═══ [2] 조립/분해 초기화 (고정 방향/위치 설정) ═══
+  useEffect(() => {
+    const model = sceneRef.current?.getObjectByName("loadedModel");
+    if (!model || parts.length === 0 || !isModelReady) return;
+
+    // 매핑 로직과 별개로 좌표 초기화는 parts가 바뀔 때마다 실행
+    model.traverse((child) => {
+      if (child.isMesh) {
+        let current = child;
+        let partData = null;
+
+        while (current && current !== model) {
+          partData = parts.find(p => p.meshName === current.name);
+          if (partData) break;
+          current = current.parent;
+        }
+
+        if (partData && logicalPartsRef.current.has(current.name)) {
+          const meta = typeof partData.content === 'string' 
+            ? JSON.parse(partData.content) 
+            : partData.content;
+
+          const homePos = new THREE.Vector3(
+            meta.position.x,
+            meta.position.y,
+            meta.position.z
+          );
+          
+          const explodeDir = new THREE.Vector3(
+            meta.explodeVector.x,
+            meta.explodeVector.y,
+            meta.explodeVector.z
+          );
+
+          if (explodeDir.length() < 0.001) {
+            explodeDir.copy(homePos).normalize();
+            if (explodeDir.length() < 0.01) explodeDir.set(0, 1, 0);
+          }
+
+          current.position.copy(homePos); // 초기 위치 강제 세팅
+          originalPositionsRef.current.set(current.name, homePos.clone());
+          current.userData.fixedDir = explodeDir;
+        }
+      }
+    });
+  }, [parts, isModelReady]);
+
+  // ═══ [3] 조립/분해 애니메이션 루프 ═══
+  // ✅ [수정] parts를 dependency에 추가하여 데이터가 로드된 후에도 애니메이션이 실행되도록 함
+  useEffect(() => {
+    if (!isModelReady || logicalPartsRef.current.size === 0) return;
+
+    let animationFrameId;
+    const lerpFactor = 0.05; 
+    const explosionStrength = 0.1; 
+
+    const animate = () => {
+      let isMoving = false;
+      const progress = assemblyProgress / 100;
+
+      logicalPartsRef.current.forEach((part, partName) => {
+        const homePos = originalPositionsRef.current.get(partName);
+        const explodeDir = part.userData.fixedDir;
+        if (!homePos) return;
+
+        const moveDistance = progress * explosionStrength;
+        const targetPos = homePos.clone().add(explodeDir.clone().multiplyScalar(moveDistance));
+
+        part.position.lerp(targetPos, lerpFactor);
+
+        if (part.position.distanceTo(targetPos) > 0.0001) {
+          isMoving = true;
+        }
+      });
+
+      if (isMoving) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [assemblyProgress, isModelReady, parts]); // 👈 parts 추가됨!
 
   // ═══ 부품 하이라이트 ═══
   useEffect(() => {
-    if (meshesRef.current.size === 0) return;
+    if (logicalPartsRef.current.size === 0) return;
 
-    if (!selectedPartKey) {
-      // 모든 하이라이트 제거
-      meshesRef.current.forEach((mesh) => {
-        if (mesh.material) {
-          mesh.material.emissive = new THREE.Color(0x000000);
-          mesh.material.emissiveIntensity = 0;
-        }
-      });
-      return;
-    }
+    clickableMeshesRef.current.forEach((mesh) => {
+      if (mesh.material) {
+        mesh.material.emissive.set(0x000000);
+        mesh.material.emissiveIntensity = 0;
+      }
+    });
+    if (!selectedPartKey) return;
 
-    // 선택된 부품 찾기
     const selectedPart = parts.find((p) => {
       if (p?.id && selectedPartKey === `id:${p.id}`) return true;
       if (p?.meshName && selectedPartKey === `mesh:${p.meshName}`) return true;
       return false;
     });
 
-    if (!selectedPart?.meshName) return;
+    if (!selectedPart) return;
 
-    console.log(`[ThreeViewer] Highlighting: ${selectedPart.meshName}`);
+    const targetGroup = logicalPartsRef.current.get(selectedPart.meshName);
+    if (targetGroup) {
+      targetGroup.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.emissive.set(0x00e5ff);
+          child.material.emissiveIntensity = 0.5;
+        }
+      });
+    }
 
-    // 모든 mesh 초기화 + 선택 mesh만 발광
-    meshesRef.current.forEach((mesh, meshName) => {
-      if (!mesh.material) return;
-
-      if (meshName === selectedPart.meshName) {
-        mesh.material.emissive = new THREE.Color(0x00e5ff);
-        mesh.material.emissiveIntensity = 0.5;
-      } else {
-        mesh.material.emissive = new THREE.Color(0x000000);
-        mesh.material.emissiveIntensity = 0;
-      }
-    });
   }, [selectedPartKey, parts]);
 
   // ═══ 부품 클릭 감지 ═══
@@ -325,41 +436,29 @@ export default function ThreeViewer({
     const handleClick = (event) => {
       if (!cameraRef.current || !sceneRef.current) return;
 
-      // 마우스 좌표 정규화 (-1 ~ 1)
       const rect = rendererRef.current.domElement.getBoundingClientRect();
       mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-      // Raycasting
       raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
 
-      const intersects = raycasterRef.current.intersectObjects(
-        sceneRef.current.children,
-        true
-      );
+      const intersects = raycasterRef.current.intersectObjects(clickableMeshesRef.current, true);
 
       if (intersects.length > 0) {
         const clickedMesh = intersects[0].object;
-        const meshName = clickedMesh.name || clickedMesh.parent?.name;
+        const partData = clickedMesh.userData.partData;
 
-        console.log(`[ThreeViewer] Clicked mesh: ${meshName}`);
-
-        // parts에서 해당 mesh 찾기
-        const part = parts.find((p) => p.meshName === meshName);
-        if (part) {
-          onPartClick(part);
-        }
+        if (partData) {
+          onPartClick(partData);
+        }        
+      } else {
+        onPartClick(null);
       }
     };
 
     rendererRef.current.domElement.addEventListener("click", handleClick);
-
-    return () => {
-      if (rendererRef.current?.domElement) {
-        rendererRef.current.domElement.removeEventListener("click", handleClick);
-      }
-    };
-  }, [parts, onPartClick]);
+    return () => rendererRef.current?.domElement.removeEventListener("click", handleClick);
+  }, [onPartClick]);
 
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>

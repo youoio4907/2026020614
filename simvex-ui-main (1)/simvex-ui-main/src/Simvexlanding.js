@@ -18,12 +18,25 @@ const IconAI = () => (
     <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
   </svg>
 );
-const IconCommunity = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+const IconTest = () => (
+   <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {/* 시험지 */}
+    <path d="M6 2h9l3 3v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+    <path d="M15 2v3h3" />
+
+    {/* 문제 줄 */}
+    <path d="M8 9h6" />
+    <path d="M8 13h6" />
+
+    {/* 체크 표시 */}
+    <path d="M8 17l2 2 4-4" />
   </svg>
 );
 
@@ -350,7 +363,7 @@ export default function SimvexLanding({ onStart, onLab, onTest }) {
   const cards = [
     { icon: <Icon3D />,        title: "실감 나는 3D 학습",  desc: "실제 엔진과 동일한 구조로 제공되는 3D 모델을 통해 학습 과정을 더 깊게 체험하세요." },
     { icon: <IconAI />,        title: "AI 맞춤형 가이드",   desc: "AI 기반의 맞춤형 학습 경험을 통해 학습자의 수준에 맞게 최적화된 도움을 받습니다." },
-    { icon: <IconCommunity />, title: "커뮤니티와 협업",    desc: "동료 학습자와의 협업과 토론을 통해 실험 및 프로젝트를 함께 진행할 수 있습니다." },
+    { icon: <IconTest />, title: "분야별 모의고사 학습",    desc: "기계 공학, 전기 전자 공학, 화학 공학 등 원하는 분야와 모델을 선택해 실전형 모의고사 문제를 풀어보세요." },
   ];
 
   return (
@@ -363,11 +376,6 @@ export default function SimvexLanding({ onStart, onLab, onTest }) {
         <nav className="nav">
           <div className="inner">
             <div className="nav-logo">
-              <div className="nav-logo-icon">
-                <svg viewBox="0 0 18 18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="9" cy="9" r="3" /><path d="M9 2v2M9 14v2M2 9h2M14 9h2" />
-                </svg>
-              </div>
               <span className="nav-logo-text">SIMVEX</span>
             </div>
             <div className="nav-links">

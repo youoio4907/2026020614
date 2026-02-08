@@ -245,7 +245,7 @@
 /* 오른쪽 복원 버튼 위치 */
 .viewer-panel-restore-right { right: 6px; }
 
-/* ── 왼쪽 완제품 패널 ── */
+/* ── 왼쪽 모델 패널 ── */
 .viewer-product {
   width: 210px;
   flex-shrink: 0;
@@ -1202,7 +1202,7 @@
   flex-shrink: 0;
 }
 
-/* ─── 완제품 개요 패널 스타일 개선 ─── */
+/* ─── 모델 개요 패널 스타일 개선 ─── */
 .viewer-product-model-title {
   font-size: 18px;
   font-weight: 700;

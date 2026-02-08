@@ -13,7 +13,7 @@ const FIELD_TO_MODEL_TITLES = {
 };
 
 /**
- * 제품별 썸네일 SVG 아이콘
+ * 모델별 썸네일 SVG 아이콘
  */
 const V4EngineIcon = () => (
   <svg viewBox="0 0 120 120" fill="none">
@@ -264,12 +264,7 @@ export default function ExamProductSelectPage({ field, onHome, onBack, onProduct
         <nav className="nav">
           <div className="inner">
             <div className="nav-logo" onClick={onHome}>
-              <div className="nav-logo-icon">
-                <svg viewBox="0 0 18 18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="9" cy="9" r="3" />
-                  <path d="M9 2v2M9 14v2M2 9h2M14 9h2" />
-                </svg>
-              </div>
+              
               <span className="nav-logo-text">SIMVEX</span>
             </div>
           </div>
@@ -318,12 +313,12 @@ export default function ExamProductSelectPage({ field, onHome, onBack, onProduct
             {!loading && !errMsg && filteredModels.length > 0 && (
               <>
                 <div className="pl-multi-select-hint">
-                  💡 하나 이상의 완제품을 선택하세요 (총 20문제)
+                  💡 하나 이상의 모델을 선택하세요 (총 20문제)
                 </div>
                 <div className="pl-list">
                   {filteredModels.map((model) => {
                     const IconComponent = PRODUCT_ICONS[model.title] || V4EngineIcon;
-                    const description = PRODUCT_DESCRIPTIONS[model.title] || "이 완제품에 대한 모의고사를 풀어보세요";
+                    const description = PRODUCT_DESCRIPTIONS[model.title] || "이 모델에 대한 모의고사를 풀어보세요";
                     const selected = isSelected(model);
 
                     return (
