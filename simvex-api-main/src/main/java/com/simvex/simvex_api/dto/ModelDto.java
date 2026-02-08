@@ -1,45 +1,58 @@
+// src/main/java/com/simvex/simvex_api/dto/ModelDto.java
 package com.simvex.simvex_api.dto;
 
 import com.simvex.simvex_api.model.ModelEntity;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ModelDto {
-    public Long id;
-    public String title;
-    public String modelUrl;
+    private Long id;
+    private String title;
+    private String modelUrl;
+    
+    private String description;
+    private String aiSummary;
+    private String domainKey;
+    private String categoryKey;
+    private String slug;
 
-    // [신규 추가] 모델 설명 및 AI 요약
-    public String description;
-    public String aiSummary;
-
-    // [신규 추가] 퀴즈와 메모 리스트
-    public List<QuizDto> quizzes;
-    public List<MemoDto> memos;
+    public ModelDto() {}
 
     public static ModelDto from(ModelEntity e) {
         ModelDto dto = new ModelDto();
-        dto.id = e.getId();
-        dto.title = e.getTitle();
-        dto.modelUrl = e.getModelUrl();
-
-        // Entity 데이터를 DTO로 복사
-        dto.description = e.getDescription();
-        dto.aiSummary = e.getAiSummary();
-
-        // 리스트 변환 (Entity List -> DTO List)
-        if (e.getQuizzes() != null) {
-            dto.quizzes = e.getQuizzes().stream()
-                    .map(QuizDto::from)
-                    .collect(Collectors.toList());
-        }
+        dto.setId(e.getId());
+        dto.setTitle(e.getTitle());
+        dto.setModelUrl(e.getModelUrl());
         
-        if (e.getMemos() != null) {
-            dto.memos = e.getMemos().stream()
-                    .map(MemoDto::from)
-                    .collect(Collectors.toList());
-        }
-
+        dto.setDescription(e.getDescription());
+        dto.setAiSummary(e.getAiSummary());
+        dto.setDomainKey(e.getDomainKey());
+        dto.setCategoryKey(e.getCategoryKey());
+        dto.setSlug(e.getSlug());
+        
         return dto;
     }
+
+    // --- Getter & Setter ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getModelUrl() { return modelUrl; }
+    public void setModelUrl(String modelUrl) { this.modelUrl = modelUrl; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getAiSummary() { return aiSummary; }
+    public void setAiSummary(String aiSummary) { this.aiSummary = aiSummary; }
+
+    public String getDomainKey() { return domainKey; }
+    public void setDomainKey(String domainKey) { this.domainKey = domainKey; }
+
+    public String getCategoryKey() { return categoryKey; }
+    public void setCategoryKey(String categoryKey) { this.categoryKey = categoryKey; }
+
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
 }

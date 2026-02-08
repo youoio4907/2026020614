@@ -1,7 +1,7 @@
-// src/main/java/com/simvex/simvex_api/ai/OpenAIClient.java
 package com.simvex.simvex_api.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -18,29 +18,29 @@ public class OpenAIClient {
     private final WebClient webClient;
     private final String apiKey;
 
-    public OpenAIClient(
-            WebClient openAIWebClient,
-            @Value("${openai.api-key:}") String apiKey
-    ) {
+    public OpenAIClient(WebClient openAIWebClient, @Value("${openai.api-key:}") String apiKey) {
         this.webClient = openAIWebClient;
         this.apiKey = apiKey;
-        System.out.println("OPENAI KEY LOADED = " + (apiKey != null && !apiKey.isBlank()));
     }
 
     public boolean enabled() {
         return apiKey != null && !apiKey.isBlank();
     }
 
-    public String ask(String prompt) {
-        // Responses API 규격: input_text 사용
+    // [변경] 리턴 타입을 String -> AiResponseWrapper (ID 포함)로 변경
+    // [변경] 파라미터에 previousResponseId 추가
+    public AiResponseWrapper ask(String prompt, String previousResponseId) {
+        
+        // previousResponseId가 있으면 포함하여 요청 객체 생성
         var req = new ResponsesRequest(
-                "gpt-5-mini",
+                "gpt-5-mini", // 또는 사용 가능한 모델명
                 List.of(
                         new InputMessage(
                                 "user",
                                 List.of(new ContentPart("input_text", prompt))
                         )
-                )
+                ),
+                previousResponseId // null이면 포함되지 않음 (JsonInclude 설정 필요)
         );
 
         try {
@@ -53,47 +53,39 @@ public class OpenAIClient {
                     .timeout(Duration.ofSeconds(60))
                     .block();
 
-            if (res == null) return "";
+            if (res == null) return new AiResponseWrapper("", null);
 
-            System.out.println(res.output_text + "!!!!!!!!!!!!!!!!");
-
-            // 1) 혹시 최상단 output_text 가 있으면 우선 사용 ??
+            String answerText = "";
             if (res.output_text != null && !res.output_text.isBlank()) {
-                return res.output_text;
+                answerText = res.output_text;
+            } else {
+                answerText = extractOutputText(res.output);
             }
 
-            // 2) 일반적으로는 output[] -> message -> content[] -> output_text.text
-            String extracted = extractOutputText(res.output);
-            return extracted == null ? "" : extracted;
+            // 응답 텍스트와 함께 새로운 response_id 반환
+            return new AiResponseWrapper(answerText != null ? answerText : "", res.id);
 
         } catch (WebClientResponseException e) {
-            // 콘솔에 남겨서 원인 파악 쉽게
-            System.out.println("OPENAI ERROR STATUS = " + e.getStatusCode());
-            System.out.println("OPENAI ERROR BODY = " + e.getResponseBodyAsString());
+            System.out.println("OPENAI ERROR: " + e.getResponseBodyAsString());
             throw e;
         }
     }
 
     @SuppressWarnings("unchecked")
     private String extractOutputText(List<Object> output) {
+        // (기존 로직 유지)
         if (output == null) return null;
-
         for (Object item : output) {
             if (!(item instanceof Map)) continue;
             Map<String, Object> outItem = (Map<String, Object>) item;
-
             if (!"message".equals(outItem.get("type"))) continue;
-
             Object contentObj = outItem.get("content");
             if (!(contentObj instanceof List)) continue;
-
             List<Object> contentList = (List<Object>) contentObj;
             for (Object c : contentList) {
                 if (!(c instanceof Map)) continue;
                 Map<String, Object> part = (Map<String, Object>) c;
-
                 if (!"output_text".equals(part.get("type"))) continue;
-
                 Object text = part.get("text");
                 if (text instanceof String s && !s.isBlank()) {
                     return s;
@@ -103,16 +95,24 @@ public class OpenAIClient {
         return null;
     }
 
-    // ===== Request DTOs =====
-    public record ResponsesRequest(String model, List<InputMessage> input) {}
+    // ===== DTOs =====
+    @JsonInclude(JsonInclude.Include.NON_NULL) // null 필드는 JSON에서 제외
+    public record ResponsesRequest(
+            String model, 
+            List<InputMessage> input,
+            String previous_response_id // [추가] 필드
+    ) {}
+
     public record InputMessage(String role, List<ContentPart> content) {}
     public record ContentPart(String type, String text) {}
 
-    // ===== Response DTO =====
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ResponsesResponse {
-        public String id;
-        public String output_text;     // 있을 수도 없을 수도
-        public List<Object> output;    // 보통 여기에서 텍스트 추출
+        public String id; // OpenAI가 반환하는 Response ID
+        public String output_text;
+        public List<Object> output;
     }
+
+    // [신규] 결과 래퍼 클래스
+    public record AiResponseWrapper(String text, String responseId) {}
 }
