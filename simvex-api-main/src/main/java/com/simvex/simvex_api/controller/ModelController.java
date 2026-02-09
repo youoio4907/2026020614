@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/models")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class ModelController {
 
     private final ModelRepository modelRepository;

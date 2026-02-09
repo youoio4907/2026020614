@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/study")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class StudyController {
 
     private final ModelRepository modelRepository;

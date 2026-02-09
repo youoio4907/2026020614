@@ -11,7 +11,7 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
   const navItems = ["Home", "Study", "CAD", "Lab", "Test"];
 
   // API Base URL
-  const API_BASE = "http://localhost:8080/api/workflow";
+  const API_BASE = "/api/workflow";
 
   // 상태 관리
   const [nodes, setNodes] = useState([]);
@@ -298,7 +298,7 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
 
   const handleFilePreview = (e, file) => {
     e.stopPropagation();
-    const fileUrl = `http://localhost:8080${file.url}`;
+    const fileUrl = file.url;
     const fileExt = file.fileName.split('.').pop().toLowerCase();
     
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(fileExt)) {
@@ -445,7 +445,7 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
                                     {node.files.map(file => (
                                         <div key={file.id} className="wf-file-row">
                                             <a 
-                                                href={`http://localhost:8080${file.url}`} 
+                                                href={file.url} 
                                                 className="wf-file-item"
                                                 onClick={(e) => handleFilePreview(e, file)}
                                                 download

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/workflow")
-@CrossOrigin(origins = "*") // 실제 운영 시 도메인 제한 필요
+//@CrossOrigin(origins = "*") // 실제 운영 시 도메인 제한 필요
 public class WorkflowController {
 
     private final WorkflowNodeRepository nodeRepo;
