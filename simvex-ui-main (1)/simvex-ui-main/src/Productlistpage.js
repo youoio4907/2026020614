@@ -7,7 +7,7 @@ import "./Productlistpage.css";
  * 분야(한글) -> 포함할 모델 title 매핑 (임시)
  */
 const FIELD_TO_MODEL_TITLES = {
-  "기계 공학": ["V4_Engine", "Robot_Arm", "Robot_Gripper", "Machine_Vice", "Suspension"],
+  "기계 공학": ["V4_Engine", "Robot_Arm", "Robot_Gripper", "Machine_Vice", "Suspension", "Leaf_Spring"],
   "전기 전자 공학": ["Leaf_Spring"],
   "항공 우주 공학": ["Drone"],
   "재료 과학": ["Suspension"],
@@ -113,8 +113,8 @@ const SuspensionIcon = () => (
       </linearGradient>
     </defs>
     {/* 스프링 */}
-    <path d="M 60 30 Q 50 35, 60 40 Q 70 45, 60 50 Q 50 55, 60 60 Q 70 65, 60 70" 
-          stroke="url(#suspGrad)" strokeWidth="4" fill="none" strokeLinecap="round" />
+    <path d="M 60 30 Q 50 35, 60 40 Q 70 45, 60 50 Q 50 55, 60 60 Q 70 65, 60 70"
+      stroke="url(#suspGrad)" strokeWidth="4" fill="none" strokeLinecap="round" />
     {/* 상단 마운트 */}
     <rect x="50" y="20" width="20" height="8" rx="2" fill="#ea580c" />
     {/* 하단 마운트 */}
@@ -228,14 +228,14 @@ export default function ProductListPage({ field, onHome, onBack, onLearn, onLab,
       alive = false;
     };
   }, []);
-/*
-  const filteredModels = useMemo(() => {
-    const allow = FIELD_TO_MODEL_TITLES[field] || null;
-    if (!allow) return models;
-    if (allow.length === 0) return [];
-    return models.filter((m) => allow.includes(m.title));
-  }, [models, field]);
-*/
+  /*
+    const filteredModels = useMemo(() => {
+      const allow = FIELD_TO_MODEL_TITLES[field] || null;
+      if (!allow) return models;
+      if (allow.length === 0) return [];
+      return models.filter((m) => allow.includes(m.title));
+    }, [models, field]);
+  */
 
   const filteredModels = useMemo(() => {
     const allow = FIELD_TO_MODEL_TITLES[field];

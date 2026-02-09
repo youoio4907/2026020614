@@ -69,11 +69,11 @@ public class AssetImportService {
                 String currentDesc = model.getDescription();
                 String jsonDesc = asString(root.get("description"));
                 // DB가 비어있고, JSON에 값이 있을 때만 저장
-                // if ((currentDesc == null || currentDesc.isBlank()) &&
-                // (jsonDesc != null && !jsonDesc.isBlank())) {
+                if ((currentDesc == null || currentDesc.isBlank()) &&
+                        (jsonDesc != null && !jsonDesc.isBlank())) {
+                    model.setDescription(jsonDesc);
+                }
                 // model.setDescription(jsonDesc);
-                // }
-                model.setDescription(jsonDesc);
             }
 
             if (root.containsKey("ai_summary")) {
