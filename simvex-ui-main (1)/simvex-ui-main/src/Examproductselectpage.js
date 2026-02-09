@@ -225,12 +225,18 @@ export default function ExamProductSelectPage({ field, onHome, onBack, onProduct
     };
   }, []);
 
-  const filteredModels = useMemo(() => {
-    const allow = FIELD_TO_MODEL_TITLES[field] || null;
-    if (!allow) return models;
-    if (allow.length === 0) return [];
-    return models.filter((m) => allow.includes(m.title));
-  }, [models, field]);
+const filteredModels = useMemo(() => {
+  const allow = FIELD_TO_MODEL_TITLES[field] || null;
+  if (!allow) return models;
+  if (allow.length === 0) return [];
+
+  return models
+    .filter((m) => allow.includes(m.title))
+    .sort(
+      (a, b) => allow.indexOf(a.title) - allow.indexOf(b.title)
+    );
+}, [models, field]);
+
 
   const toggleModelSelection = (model) => {
     setSelectedModels(prev => {

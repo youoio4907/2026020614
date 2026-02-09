@@ -123,6 +123,21 @@ const PART_THUMBS_BY_MODEL = {
     nut02:"/assets/drone/drone_nut.png",
   },
 
+  Leaf_Spring:{
+    clamp_center:"/assets/leaf_spring/clamp_center.png",
+    clamp_primary002:"/assets/leaf_spring/clamp_primary.png",
+    clamp_secondary002:"/assets/leaf_spring/clamp_secondary.png",
+    leaf_layer:"/assets/leaf_spring/leaf_layer.png",
+    support002:"/assets/leaf_spring/support.png",
+    support_chassis_rigid:"/assets/leaf_spring/support_chassis_rigid.png",
+    support_chassis:"/assets/leaf_spring/support_chassis.png",
+    support_rubber_60mm002:"/assets/leaf_spring/support_rubber.png",
+    clamp_primary001:"/assets/leaf_spring/clamp_primary.png",
+    clamp_secondary001:"/assets/leaf_spring/clamp_secondary.png",
+    support001:"/assets/leaf_spring/support.png",
+    support_rubber_60mm001:"/assets/leaf_spring/support_rubber.png",
+  },
+
 };
 
 /* ════════════════════════════════════════════ */
