@@ -9,6 +9,121 @@ import "./Learnpage.css";
 
 import ThreeViewer from "./ThreeViewer";
 
+const normalizeMeshKey = (s) =>
+  (s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "_"); // 하이픈/공백 등 -> _
+
+const PART_THUMBS_BY_MODEL = {
+  Suspension: {
+    base: "/assets/suspension/base.png",
+    nut: "/assets/suspension/nut.png",
+    rod: "/assets/suspension/rod.png",
+    spring: "/assets/suspension/spring.png",
+  },
+  Machine_Vice: {
+    part1_fuhrung: "/assets/machine_vice/part1_fuhrung.png",
+    part2_feste_backe: "/assets/machine_vice/part2_feste_backe.png",
+    part3_lose_backe: "/assets/machine_vice/part3_lose_backe.png",
+    part4_spindelsockel: "/assets/machine_vice/part4_spindelsockel.png",
+    part5_spannbacke: "/assets/machine_vice/part5_spannbacke.png",
+    part6_fuhrungschiene01: "/assets/machine_vice/part6_fuhrungschiene.png",
+    part7_trapezspindel: "/assets/machine_vice/part7_trapezspindel.png",
+    part8_grundplatte:"/assets/machine_vice/part8_grundplatte.png",
+    part9_druckhulse01:"/assets/machine_vice/part9_druckhulse.png",
+    part6_fuhrungschiene02: "/assets/machine_vice/part6_fuhrungschiene.png",
+    part9_druckhulse02:"/assets/machine_vice/part9_druckhulse.png",
+    part9_druckhulse03:"/assets/machine_vice/part9_druckhulse.png",
+    part9_druckhulse04:"/assets/machine_vice/part9_druckhulse.png",
+
+  },
+  V4_Engine:{
+    connecting_rod04:"/assets/v4_engine/connecting_rod.png",
+    connecting_rod_cap01:"/assets/v4_engine/connecting_rod_cap.png",
+    conrod_bolt:"/assets/v4_engine/conrod_bolt.png",
+    crankshaft:"/assets/v4_engine/crankshaft.png",
+    piston01:"/assets/v4_engine/piston.png",
+    piston_pin01:"/assets/v4_engine/piston_pin.png",
+    connecting_rod01:"/assets/v4_engine/connecting_rod.png",
+    connecting_rod02:"/assets/v4_engine/connecting_rod.png",
+    connecting_rod03:"/assets/v4_engine/connecting_rod.png",
+    connecting_rod_cap02:"/assets/v4_engine/connecting_rod_cap.png",
+    connecting_rod_cap03:"/assets/v4_engine/connecting_rod_cap.png",
+    connecting_rod_cap04:"/assets/v4_engine/connecting_rod_cap.png",
+    piston02:"/assets/v4_engine/piston.png",
+    piston03:"/assets/v4_engine/piston.png",
+    piston04:"/assets/v4_engine/piston.png",
+    piston_pin02:"/assets/v4_engine/piston_pin.png",
+    piston_pin03:"/assets/v4_engine/piston_pin.png",
+    piston_pin04:"/assets/v4_engine/piston_pin.png",
+    piston_ring01:"/assets/v4_engine/piston_ring.png",
+    piston_ring02:"/assets/v4_engine/piston_ring.png",
+    piston_ring03:"/assets/v4_engine/piston_ring.png",
+    piston_ring04:"/assets/v4_engine/piston_ring.png",
+    piston_ring05:"/assets/v4_engine/piston_ring.png",
+    piston_ring06:"/assets/v4_engine/piston_ring.png",
+    piston_ring07:"/assets/v4_engine/piston_ring.png",
+    piston_ring08:"/assets/v4_engine/piston_ring.png",
+    piston_ring09:"/assets/v4_engine/piston_ring.png",
+    piston_ring10:"/assets/v4_engine/piston_ring.png",
+    piston_ring11:"/assets/v4_engine/piston_ring.png",
+    piston_ring12:"/assets/v4_engine/piston_ring.png",
+
+  },
+  Robot_Gripper:{
+    base_gear:"/assets/robot_gripper/base_gear.png",
+    base_mounting_bracket:"/assets/robot_gripper/base_mounting_bracket.png",
+    base_plate:"/assets/robot_gripper/base_plate.png",
+    red_gear_link:"/assets/robot_gripper/gear_link_1.png",
+    orange_gear_link:"/assets/robot_gripper/gear_link_2.png",
+    left_gripper:"/assets/robot_gripper/gripper.png",
+    left_link:"/assets/robot_gripper/link.png",
+    right_gripper:"/assets/robot_gripper/gripper.png",
+    right_link:"/assets/robot_gripper/link.png",
+    pin001:"/assets/robot_gripper/pin.png",
+    pin002:"/assets/robot_gripper/pin.png",
+    pin004:"/assets/robot_gripper/pin.png",
+    pin003:"/assets/robot_gripper/pin.png",
+    pin007:"/assets/robot_gripper/pin.png",
+    pin008:"/assets/robot_gripper/pin.png",
+    pin006:"/assets/robot_gripper/pin.png",
+    pin005:"/assets/robot_gripper/pin.png",
+    pin010:"/assets/robot_gripper/pin.png",
+    pin009:"/assets/robot_gripper/pin.png",
+  },
+  Drone:{
+    arm_gear01:"/assets/drone/arm_gear.png",
+    beater_disc01:"/assets/drone/beater_disc.png",
+    gearing01:"/assets/drone/gearing.png",
+    impellar_blade01:"/assets/drone/impellar_blade.png",
+    leg01:"/assets/drone/leg.png",
+    main_frame01:"/assets/drone/main_frame.png",
+    main_frame02:"/assets/drone/main_frame_mir.png",
+    screw04:"/assets/drone/screw.png",
+    leg03:"/assets/drone/leg.png",
+    impellar_blade03:"/assets/drone/impellar_blade.png",
+    gearing03:"/assets/drone/gearing.png",
+    arm_gear03:"/assets/drone/arm_gear.png",
+    leg02:"/assets/drone/leg.png",
+    impellar_blade02:"/assets/drone/impellar_blade.png",
+    gearing02:"/assets/drone/gearing.png",
+    arm_gear02:"/assets/drone/arm_gear.png",
+    arm_gear04:"/assets/drone/arm_gear.png",
+    gearing04:"/assets/drone/gearing.png",
+    impellar_blade04:"/assets/drone/impellar_blade.png",
+    leg04:"/assets/drone/leg.png",
+    nut04:"/assets/drone/drone_nut.png",
+    screw01:"/assets/drone/screw.png",
+    nut01:"/assets/drone/drone_nut.png",
+    screw03:"/assets/drone/screw.png",
+    nut03:"/assets/drone/drone_nut.png",
+    screw02:"/assets/drone/screw.png",
+    nut02:"/assets/drone/drone_nut.png",
+  },
+
+};
+
 /* ════════════════════════════════════════════ */
 /* 부품 SVG 아이콘들 (기존 디자인 유지)           */
 /* ════════════════════════════════════════════ */
@@ -137,6 +252,10 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
   const [isAiLoading, setIsAiLoading] = useState(false);
   const chatBottomRef = useRef(null);
 
+  /*부품 썸네일*/
+  const currentThumbMap =
+  PART_THUMBS_BY_MODEL[selectedModel?.title] || {};
+
   const navItems = ["Home", "Study", "CAD", "Lab", "Test"];
   const tabs = ["조립품", "퀴즈"];
 
@@ -201,6 +320,11 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
       .then(data => {
         const loadedParts = Array.isArray(data) ? data : [];
         setParts(loadedParts);
+
+         // ✅ 여기다 추가한다 (이 줄들만!)
+  console.log("지금 모델:", selectedModel?.title);
+  console.log("부품 meshName:", loadedParts.map(p => p.meshName));
+
         // 첫 부품 자동 선택
         if (loadedParts.length > 0) setSelectedPartKey(getPartKey(loadedParts[0]));
       })
@@ -797,10 +921,16 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                           <div className="viewer-info-scroll">
                             {parts.length > 0 && (
                               <div className="viewer-parts-grid">
-                                {parts.map((part, idx) => {
+                                {parts.map((part) => {
                                   const partKey = getPartKey(part);
                                   const isActive = partKey === selectedPartKey;
-                                  const IconComponent = PART_ICONS[idx % PART_ICONS.length];
+
+                                  const key = normalizeMeshKey(part.meshName);
+                                  const src =
+                                    currentThumbMap[key] ||
+                                    currentThumbMap["base"] || // Suspension 기본
+                                    "/assets/suspension/base.png"; // 최후 fallback
+
                                   return (
                                     <div
                                       key={partKey}
@@ -808,7 +938,15 @@ export default function LearnPage({ onHome, onStudy, selectedModel, onLab, onTes
                                       onClick={() => handlePartSelect(part)}
                                       title={part.meshName}
                                     >
-                                      <IconComponent />
+                                      <img
+                                        src={src}
+                                        alt={part.meshName}
+                                        style={{
+                                          width: "100%",
+                                          height: "100%",
+                                          objectFit: "contain",
+                                        }}
+                                      />
                                     </div>
                                   );
                                 })}
