@@ -4,7 +4,7 @@ import "./Shared.css";
 import "./Productlistpage.css";
 
 const FIELD_TO_MODEL_TITLES = {
-  "기계 공학": ["V4_Engine", "Robot_Arm", "Robot_Gripper", "Machine_Vice", "Suspension"],
+  "기계 공학": ["V4_Engine", "Robot_Arm", "Robot_Gripper", "Machine_Vice", "Suspension", "Leaf_Spring"],
   "전기 전자 공학": ["Leaf_Spring"],
   "항공 우주 공학": ["Drone"],
   "재료 과학": ["Suspension"],
@@ -110,8 +110,8 @@ const SuspensionIcon = () => (
       </linearGradient>
     </defs>
     {/* 스프링 */}
-    <path d="M 60 30 Q 50 35, 60 40 Q 70 45, 60 50 Q 50 55, 60 60 Q 70 65, 60 70" 
-          stroke="url(#suspGrad)" strokeWidth="4" fill="none" strokeLinecap="round" />
+    <path d="M 60 30 Q 50 35, 60 40 Q 70 45, 60 50 Q 50 55, 60 60 Q 70 65, 60 70"
+      stroke="url(#suspGrad)" strokeWidth="4" fill="none" strokeLinecap="round" />
     {/* 상단 마운트 */}
     <rect x="50" y="20" width="20" height="8" rx="2" fill="#ea580c" />
     {/* 하단 마운트 */}
@@ -264,7 +264,7 @@ export default function ExamProductSelectPage({ field, onHome, onBack, onProduct
         <nav className="nav">
           <div className="inner">
             <div className="nav-logo" onClick={onHome}>
-              
+
               <span className="nav-logo-text">SIMVEX</span>
             </div>
           </div>
@@ -347,7 +347,7 @@ export default function ExamProductSelectPage({ field, onHome, onBack, onProduct
                     );
                   })}
                 </div>
-                
+
                 {selectedModels.length > 0 && (
                   <div className="pl-next-btn-container">
                     <button className="pl-next-btn" onClick={handleNext}>
