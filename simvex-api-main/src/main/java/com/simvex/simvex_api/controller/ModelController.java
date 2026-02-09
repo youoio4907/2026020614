@@ -1,9 +1,7 @@
-// src/main/java/com/simvex/simvex_api/controller/ModelController.java
 package com.simvex.simvex_api.controller;
 
 import com.simvex.simvex_api.domain.*;
 import com.simvex.simvex_api.dto.*;
-import com.simvex.simvex_api.model.ModelEntity;
 import com.simvex.simvex_api.model.ModelRepository;
 import com.simvex.simvex_api.part.PartRepository;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/models")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class ModelController {
 
     private final ModelRepository modelRepository;
@@ -78,21 +76,28 @@ public class ModelController {
         return ResponseEntity.ok(selected);
     }
 
-    // 메모 목록
+    // [수정] 메모 목록 조회 (내 메모만 조회)
     @GetMapping("/{id}/memos")
-    public ResponseEntity<List<MemoDto>> listMemos(@PathVariable Long id) {
-        List<MemoDto> memos = memoRepository.findByModelIdOrderByIdAsc(id).stream()
+    public ResponseEntity<List<MemoDto>> listMemos(
+            @PathVariable Long id,
+            @RequestHeader(value="X-User-ID", defaultValue="default-guest") String userId
+    ) {
+        List<MemoDto> memos = memoRepository.findByModelIdAndUserIdOrderByIdAsc(id, userId).stream()
                 .map(MemoDto::from)
                 .toList();
         return ResponseEntity.ok(memos);
     }
 
-    // 메모 생성 (dto.getTitle() 사용)
+    // [수정] 메모 생성 (내 ID로 저장)
     @PostMapping("/{id}/memos")
-    public ResponseEntity<MemoDto> createMemo(@PathVariable Long id, @RequestBody MemoDto dto) {
+    public ResponseEntity<MemoDto> createMemo(
+            @PathVariable Long id, 
+            @RequestBody MemoDto dto,
+            @RequestHeader(value="X-User-ID", defaultValue="default-guest") String userId
+    ) {
         return modelRepository.findById(id).map(model -> {
-            // ✅ dto.getTitle(), dto.getContent() 사용
-            MemoEntity entity = new MemoEntity(dto.getTitle(), dto.getContent());
+            // userId를 포함하여 저장
+            MemoEntity entity = new MemoEntity(dto.getTitle(), dto.getContent(), userId);
             entity.setModel(model);
             MemoEntity saved = memoRepository.save(entity);
             return ResponseEntity.ok(MemoDto.from(saved));

@@ -26,39 +26,33 @@ public class AiChatHistoryEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String answer;
 
+    // [NEW] 사용자 ID
+    @Column(name = "user_id", nullable = false)
+    private String userId;
+
+    // [NEW] 대화 맥락 ID
+    @Column(name = "ai_summary")
+    private String aiSummary;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    // [1] 기본 생성자 (JPA 필수)
-    public AiChatHistoryEntity() {
-    }
+    public AiChatHistoryEntity() {}
 
-    // [2] 데이터 저장용 생성자
-    public AiChatHistoryEntity(ModelEntity model, String question, String answer) {
+    public AiChatHistoryEntity(ModelEntity model, String question, String answer, String userId, String aiSummary) {
         this.model = model;
         this.question = question;
         this.answer = answer;
+        this.userId = userId;
+        this.aiSummary = aiSummary;
     }
 
-    // [3] Getters (Lombok 대신 직접 작성)
-    public Long getId() {
-        return id;
-    }
-
-    public ModelEntity getModel() {
-        return model;
-    }
-
-    public String getQuestion() {
-        return question;
-    }
-
-    public String getAnswer() {
-        return answer;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public Long getId() { return id; }
+    public ModelEntity getModel() { return model; }
+    public String getQuestion() { return question; }
+    public String getAnswer() { return answer; }
+    public String getUserId() { return userId; }
+    public String getAiSummary() { return aiSummary; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }

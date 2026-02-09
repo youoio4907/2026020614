@@ -1,8 +1,8 @@
+// src/main/java/com/simvex/simvex_api/model/AssetImportService.java
 package com.simvex.simvex_api.model;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simvex.simvex_api.domain.MemoEntity;
 import com.simvex.simvex_api.domain.QuizEntity;
 import com.simvex.simvex_api.part.PartEntity;
 import com.simvex.simvex_api.part.PartRepository;
@@ -62,33 +62,20 @@ public class AssetImportService {
                 System.out.println("[IMPORT] 데이터 동기화 시작: " + model.getTitle());
             }
 
-            // ========================================================
-            // [수정 1] 모델 설명 & AI 요약 (값이 없을 때만 초기화)
-            // ========================================================
+            // [수정] 모델 설명 업데이트
             if (root.containsKey("description")) {
                 String currentDesc = model.getDescription();
                 String jsonDesc = asString(root.get("description"));
-                // DB가 비어있고, JSON에 값이 있을 때만 저장
-                if ((currentDesc == null || currentDesc.isBlank()) &&
-                        (jsonDesc != null && !jsonDesc.isBlank())) {
+
+                // DB가 비어있거나 null일 때만 JSON 내용 반영
+                if (currentDesc == null || currentDesc.isBlank()) {
                     model.setDescription(jsonDesc);
                 }
-                // model.setDescription(jsonDesc);
             }
 
-            if (root.containsKey("ai_summary")) {
-                String currentSummary = model.getAiSummary();
-                String jsonSummary = asString(root.get("ai_summary"));
-                // DB가 비어있고, JSON에 값이 있을 때만 저장
-                if ((currentSummary == null || currentSummary.isBlank()) &&
-                        (jsonSummary != null && !jsonSummary.isBlank())) {
-                    model.setAiSummary(jsonSummary);
-                }
-            }
+            // [삭제됨] ai_summary 로드 로직 제거 (Entity에서 필드가 삭제되었으므로)
 
-            // ========================================================
-            // [유지] 퀴즈 데이터 (이미 DB에 있으면 건너뜀)
-            // ========================================================
+            // [유지] 퀴즈 데이터
             List<Map<String, Object>> quizzes = asListOfMap(root.get("quizzes"));
             if (!quizzes.isEmpty() && model.getQuizzes().isEmpty()) {
                 for (Map<String, Object> q : quizzes) {
@@ -100,7 +87,6 @@ public class AssetImportService {
                     } catch (NumberFormatException e) {
                         answer = 0;
                     }
-
                     List<String> options = new ArrayList<>();
                     if (q.get("opts") instanceof List<?> list) {
                         for (Object o : list)
@@ -111,21 +97,9 @@ public class AssetImportService {
                 }
             }
 
-            // ========================================================
-            // [유지] 메모 데이터 (이미 DB에 있으면 건너뜀)
-            // ========================================================
-            List<Map<String, Object>> memos = asListOfMap(root.get("memos"));
-            if (!memos.isEmpty() && model.getMemos().isEmpty()) {
-                for (Map<String, Object> m : memos) {
-                    model.addMemo(new MemoEntity(asString(m.get("title")), asString(m.get("content"))));
-                }
-            }
-
             modelRepository.save(model);
 
-            // ========================================================
-            // [수정 2] 부품(Assets) 처리 (이미 존재하면 덮어쓰지 않음)
-            // ========================================================
+            // [유지] 부품(Assets) 처리
             String folderName = extractFolderName(model.getModelUrl(), model.getTitle());
             String fileUrl = "/assets/3d/" + folderName + "/" + integratedFile;
 
@@ -134,13 +108,10 @@ public class AssetImportService {
                 if (meshName == null || meshName.isBlank())
                     continue;
 
-                // [핵심 변경] 이미 DB에 해당 부품이 존재하면 업데이트 하지 않고 건너뜀
                 Optional<PartEntity> existingPart = findPart(model.getId(), meshName);
-                if (existingPart.isPresent()) {
-                    continue; // 덮어쓰기 방지 (Skip)
-                }
+                if (existingPart.isPresent())
+                    continue;
 
-                // 존재하지 않을 때만 신규 생성
                 Map<String, Object> content = new LinkedHashMap<>();
                 content.put("name", meshName);
                 content.put("type", "part");
@@ -154,7 +125,6 @@ public class AssetImportService {
                 PartEntity part = new PartEntity(model, meshName, content);
                 partRepository.save(part);
             }
-
             System.out.println("[IMPORT] 완료 (보존 모드): " + jsonFileName);
         }
     }

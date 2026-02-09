@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/memos")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class MemoController {
 
     private final MemoRepository memoRepository;

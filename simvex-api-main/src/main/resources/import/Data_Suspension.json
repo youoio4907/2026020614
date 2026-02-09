@@ -1,9 +1,8 @@
 {
   "project_name": "SIMVEX_PROJECT",
   "base_path": "./Integrated 3D Asset/",
-  "integrated_file": "SUSPENSION.glb",
+  "integrated_file": "Suspension.glb",
   "description": "이 모델은 차량의 노면 충격을 흡수하는 맥퍼슨 스트럿 방식의 서스펜션입니다. \n[기본 작동 원리] 노면의 충격 에너지를 스프링의 탄성 위치 에너지로 일시 저장하고, 댐퍼(쇼크 업소버)의 유체 저항을 통해 이를 열에너지로 소멸시켜 진동을 감쇠합니다. \n[구조] 차중을 지지하는 코일 스프링, 진동을 제어하는 쇼크 업소버, 그리고 차체와 연결되는 마운트로 구성된 일체형 스트럿 구조입니다. \n[관련 이론] 후크의 법칙(F=kx), 감쇠 조화 진동(Damped Harmonic Oscillation) 이론, 그리고 스프링 하질량(Unsprung Mass)에 따른 동역학적 거동 해석이 적용됩니다.",
-  "ai_summary": null,
   "quizzes": [
     {
       "q": "서스펜션의 주요 기능이 아닌 것은?",
@@ -224,12 +223,6 @@
       ],
       "ans": 0,
       "explanation": "센서로 노면과 주행 상태를 파악하여 쇼크 업소버의 딱딱하고 부드러운 정도를 즉각적으로 변화시킵니다."
-    }
-  ],
-  "memos": [
-    {
-      "title": "참고사항",
-      "content": "스프링 압축 시 튕겨 나가지 않도록 전용 공구를 사용하세요."
     }
   ],
   "assets": [
