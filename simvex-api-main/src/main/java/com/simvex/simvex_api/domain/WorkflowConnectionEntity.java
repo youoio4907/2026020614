@@ -15,16 +15,20 @@ public class WorkflowConnectionEntity {
     private String fromAnchor;
     private String toAnchor;
 
+    // [NEW]
+    @Column(name = "user_id", nullable = false)
+    private String userId;
+
     public WorkflowConnectionEntity() {}
 
-    public WorkflowConnectionEntity(Long fromNodeId, Long toNodeId, String fromAnchor, String toAnchor) {
+    public WorkflowConnectionEntity(Long fromNodeId, Long toNodeId, String fromAnchor, String toAnchor, String userId) {
         this.fromNodeId = fromNodeId;
         this.toNodeId = toNodeId;
         this.fromAnchor = fromAnchor;
         this.toAnchor = toAnchor;
+        this.userId = userId;
     }
 
-    // Getters & Setters...
     public Long getId() { return id; }
     public Long getFromNodeId() { return fromNodeId; }
     public void setFromNodeId(Long fromNodeId) { this.fromNodeId = fromNodeId; }
@@ -34,4 +38,6 @@ public class WorkflowConnectionEntity {
     public void setFromAnchor(String fromAnchor) { this.fromAnchor = fromAnchor; }
     public String getToAnchor() { return toAnchor; }
     public void setToAnchor(String toAnchor) { this.toAnchor = toAnchor; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 }

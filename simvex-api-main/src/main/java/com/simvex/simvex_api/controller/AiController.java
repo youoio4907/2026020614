@@ -24,38 +24,40 @@ public class AiController {
         this.aiService = aiService;
     }
 
-    // [신규] 대화 기록 조회 API
     @GetMapping("/history/{modelId}")
-    public ResponseEntity<List<AiService.AiChatHistoryDto>> getHistory(@PathVariable Long modelId) {
-        return ResponseEntity.ok(aiService.getChatHistory(modelId));
+    public ResponseEntity<List<AiService.AiChatHistoryDto>> getHistory(
+            @PathVariable Long modelId,
+            @RequestHeader(value="X-User-ID", defaultValue="default-guest") String userId
+    ) {
+        return ResponseEntity.ok(aiService.getChatHistory(modelId, userId));
     }
 
     @PostMapping("/ask")
-    public AiAskResponseDto ask(@RequestBody AiAskRequestDto req) {
+    public AiAskResponseDto ask(
+            @RequestBody AiAskRequestDto req,
+            @RequestHeader(value="X-User-ID", defaultValue="default-guest") String userId
+    ) {
         if (req == null || req.question == null || req.question.trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "question is required");
         }
 
-        // 1. Context 빌드 (response_id 조회 포함)
-        AiContextResult ctx = aiService.buildContext(req.modelId, req.meshName);
-        String previousResponseId = ctx.aiSummary(); // aiService에서 aiSummary 자리에 ID를 넣어줌
+        // userId 전달
+        AiContextResult ctx = aiService.buildContext(req.modelId, req.meshName, userId);
+        String previousAiSummary = ctx.aiSummary(); 
 
-        // 2. 프롬프트 생성 (이전 기록 요약 제외)
         String prompt = aiService.composePrompt(
                 req.question, 
                 ctx.partContext(), 
                 ctx.modelContext()
         );
 
-        // 3. 답변 생성 (ID 전달)
-        AiService.AiAnswerResult result = aiService.generateAnswer(prompt, previousResponseId);
+        AiService.AiAnswerResult result = aiService.generateAnswer(prompt, previousAiSummary);
 
-        // 4. 저장 및 갱신 (성공 시)
         if (result.errorCode() == null) {
-            aiService.saveChatInteraction(req.modelId, req.question, result.answer(), result.newResponseId());
+            // userId 전달
+            aiService.saveChatInteraction(req.modelId, req.question, result.answer(), result.newResponseId(), userId);
         }
 
-        // 5. 응답 구성
         Map<String, Object> meta = new HashMap<>();
         if (ctx.meta() != null) meta.putAll(ctx.meta());
         meta.put("provider", result.provider());

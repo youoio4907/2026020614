@@ -1,8 +1,8 @@
+// src/main/java/com/simvex/simvex_api/model/AssetImportService.java
 package com.simvex.simvex_api.model;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simvex.simvex_api.domain.MemoEntity;
 import com.simvex.simvex_api.domain.QuizEntity;
 import com.simvex.simvex_api.part.PartEntity;
 import com.simvex.simvex_api.part.PartRepository;
@@ -62,33 +62,20 @@ public class AssetImportService {
                 System.out.println("[IMPORT] 데이터 동기화 시작: " + model.getTitle());
             }
 
-            // ========================================================
-            // [수정 1] 모델 설명 & AI 요약 (값이 없을 때만 초기화)
-            // ========================================================
+            // [수정] 모델 설명 업데이트
             if (root.containsKey("description")) {
                 String currentDesc = model.getDescription();
                 String jsonDesc = asString(root.get("description"));
-                // DB가 비어있고, JSON에 값이 있을 때만 저장
-                // if ((currentDesc == null || currentDesc.isBlank()) &&
-                // (jsonDesc != null && !jsonDesc.isBlank())) {
-                // model.setDescription(jsonDesc);
-                // }
-                model.setDescription(jsonDesc);
-            }
-
-            if (root.containsKey("ai_summary")) {
-                String currentSummary = model.getAiSummary();
-                String jsonSummary = asString(root.get("ai_summary"));
-                // DB가 비어있고, JSON에 값이 있을 때만 저장
-                if ((currentSummary == null || currentSummary.isBlank()) &&
-                        (jsonSummary != null && !jsonSummary.isBlank())) {
-                    model.setAiSummary(jsonSummary);
+                
+                // DB가 비어있거나 null일 때만 JSON 내용 반영
+                if (currentDesc == null || currentDesc.isBlank()) {
+                    model.setDescription(jsonDesc);
                 }
             }
+            
+            // [삭제됨] ai_summary 로드 로직 제거 (Entity에서 필드가 삭제되었으므로)
 
-            // ========================================================
-            // [유지] 퀴즈 데이터 (이미 DB에 있으면 건너뜀)
-            // ========================================================
+            // [유지] 퀴즈 데이터
             List<Map<String, Object>> quizzes = asListOfMap(root.get("quizzes"));
             if (!quizzes.isEmpty() && model.getQuizzes().isEmpty()) {
                 for (Map<String, Object> q : quizzes) {
@@ -100,47 +87,28 @@ public class AssetImportService {
                     } catch (NumberFormatException e) {
                         answer = 0;
                     }
-
                     List<String> options = new ArrayList<>();
                     if (q.get("opts") instanceof List<?> list) {
-                        for (Object o : list)
-                            options.add(asString(o));
+                        for (Object o : list) options.add(asString(o));
                     }
                     String explanation = asString(q.get("explanation"));
                     model.addQuiz(new QuizEntity(question, answer, options, explanation));
                 }
             }
 
-            // ========================================================
-            // [유지] 메모 데이터 (이미 DB에 있으면 건너뜀)
-            // ========================================================
-            List<Map<String, Object>> memos = asListOfMap(root.get("memos"));
-            if (!memos.isEmpty() && model.getMemos().isEmpty()) {
-                for (Map<String, Object> m : memos) {
-                    model.addMemo(new MemoEntity(asString(m.get("title")), asString(m.get("content"))));
-                }
-            }
-
             modelRepository.save(model);
 
-            // ========================================================
-            // [수정 2] 부품(Assets) 처리 (이미 존재하면 덮어쓰지 않음)
-            // ========================================================
+            // [유지] 부품(Assets) 처리
             String folderName = extractFolderName(model.getModelUrl(), model.getTitle());
             String fileUrl = "/assets/3d/" + folderName + "/" + integratedFile;
 
             for (Map<String, Object> a : assets) {
                 String meshName = firstNonBlank(asString(a.get("title")), asString(a.get("id")));
-                if (meshName == null || meshName.isBlank())
-                    continue;
+                if (meshName == null || meshName.isBlank()) continue;
 
-                // [핵심 변경] 이미 DB에 해당 부품이 존재하면 업데이트 하지 않고 건너뜀
                 Optional<PartEntity> existingPart = findPart(model.getId(), meshName);
-                if (existingPart.isPresent()) {
-                    continue; // 덮어쓰기 방지 (Skip)
-                }
+                if (existingPart.isPresent()) continue;
 
-                // 존재하지 않을 때만 신규 생성
                 Map<String, Object> content = new LinkedHashMap<>();
                 content.put("name", meshName);
                 content.put("type", "part");
@@ -154,7 +122,6 @@ public class AssetImportService {
                 PartEntity part = new PartEntity(model, meshName, content);
                 partRepository.save(part);
             }
-
             System.out.println("[IMPORT] 완료 (보존 모드): " + jsonFileName);
         }
     }
@@ -170,37 +137,30 @@ public class AssetImportService {
         String n2 = norm(integratedFile.replace(".glb", ""));
         for (ModelEntity m : existing) {
             String mt = norm(m.getTitle());
-            if (mt.equals(n1) || mt.equals(n2))
-                return m;
+            if (mt.equals(n1) || mt.equals(n2)) return m;
         }
         for (ModelEntity m : existing) {
             String folder = extractFolderName(m.getModelUrl(), m.getTitle());
-            if (norm(folder).equals(n1) || norm(folder).equals(n2))
-                return m;
+            if (norm(folder).equals(n1) || norm(folder).equals(n2)) return m;
         }
         return null;
     }
 
     private String extractFolderName(String modelUrl, String fallback) {
-        if (modelUrl == null || modelUrl.isBlank())
-            return fallback;
+        if (modelUrl == null || modelUrl.isBlank()) return fallback;
         String s = modelUrl;
         if (s.toLowerCase().endsWith(".glb") || s.toLowerCase().endsWith(".gltf")) {
             int lastSlash = s.lastIndexOf('/');
-            if (lastSlash > 0)
-                s = s.substring(0, lastSlash);
+            if (lastSlash > 0) s = s.substring(0, lastSlash);
         }
-        if (s.endsWith("/"))
-            s = s.substring(0, s.length() - 1);
+        if (s.endsWith("/")) s = s.substring(0, s.length() - 1);
         int idx = s.lastIndexOf('/');
-        if (idx >= 0 && idx < s.length() - 1)
-            return s.substring(idx + 1);
+        if (idx >= 0 && idx < s.length() - 1) return s.substring(idx + 1);
         return fallback;
     }
 
     private String norm(String s) {
-        if (s == null)
-            return "";
+        if (s == null) return "";
         return s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
     }
 
@@ -215,8 +175,7 @@ public class AssetImportService {
             for (Object it : list) {
                 if (it instanceof Map<?, ?> m) {
                     Map<String, Object> mm = new LinkedHashMap<>();
-                    for (var e : m.entrySet())
-                        mm.put(String.valueOf(e.getKey()), e.getValue());
+                    for (var e : m.entrySet()) mm.put(String.valueOf(e.getKey()), e.getValue());
                     out.add(mm);
                 }
             }
@@ -226,9 +185,7 @@ public class AssetImportService {
     }
 
     private String firstNonBlank(String... arr) {
-        for (String s : arr)
-            if (s != null && !s.isBlank())
-                return s;
+        for (String s : arr) if (s != null && !s.isBlank()) return s;
         return null;
     }
 }

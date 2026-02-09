@@ -28,7 +28,6 @@ public class ModelEntity {
     @Column(name = "model_url", nullable = false)
     private String modelUrl;
 
-    // ✅ B 필드 (기존)
     @Column(name = "domain_key")
     private String domainKey;
 
@@ -38,18 +37,11 @@ public class ModelEntity {
     @Column(name = "slug")
     private String slug;
 
-    // ----------------------------------------------------
-    // [신규] 1. 모델 설명 및 AI 요약
-    // ----------------------------------------------------
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "ai_summary", columnDefinition = "TEXT")
-    private String aiSummary;
+    // [삭제됨] aiSummary 컬럼 제거 (사용자별 기록으로 대체됨)
 
-    // ----------------------------------------------------
-    // [신규] 2. 연관 관계 (부품, 퀴즈, 메모)
-    // ----------------------------------------------------
     @OneToMany(mappedBy = "model", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PartEntity> parts = new ArrayList<>();
 
@@ -73,9 +65,7 @@ public class ModelEntity {
     public String getDomainKey() { return domainKey; }
     public String getCategoryKey() { return categoryKey; }
     public String getSlug() { return slug; }
-    
     public String getDescription() { return description; }
-    public String getAiSummary() { return aiSummary; }
 
     public List<PartEntity> getParts() { return parts; }
     public List<QuizEntity> getQuizzes() { return quizzes; }
@@ -87,9 +77,7 @@ public class ModelEntity {
     public void setDomainKey(String domainKey) { this.domainKey = domainKey; }
     public void setCategoryKey(String categoryKey) { this.categoryKey = categoryKey; }
     public void setSlug(String slug) { this.slug = slug; }
-    
     public void setDescription(String description) { this.description = description; }
-    public void setAiSummary(String aiSummary) { this.aiSummary = aiSummary; }
 
     // --- 연관관계 편의 메소드 ---
     public void addPart(PartEntity part) {
@@ -104,14 +92,12 @@ public class ModelEntity {
         part.setModel(null);
     }
 
-    // [신규] 퀴즈 추가
     public void addQuiz(QuizEntity quiz) {
         if (quiz == null) return;
         quizzes.add(quiz);
         quiz.setModel(this);
     }
 
-    // [신규] 메모 추가
     public void addMemo(MemoEntity memo) {
         if (memo == null) return;
         memos.add(memo);

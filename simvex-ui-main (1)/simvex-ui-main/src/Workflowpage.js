@@ -1,9 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import "./Shared.css";
 import "./Workflowpage.css";
+import { getUserId } from "./utils/auth"; // 새로 만든 auth 유틸 import
 
 /* ════════════════════════════════════════════ */
-/* WorkflowPage (Design Restored + API)        */
+/* WorkflowPage (Full Code with UUID)           */
 /* ════════════════════════════════════════════ */
 export default function WorkflowPage({ onHome, onStudy, onTest }) {
   const [activeNav, setActiveNav] = useState("Lab");
@@ -38,7 +39,9 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
 
   /* ── 초기 데이터 로드 ── */
   const fetchWorkflowData = useCallback(() => {
-    fetch(API_BASE)
+    fetch(API_BASE, {
+      headers: { "X-User-ID": getUserId() } // 헤더 추가
+    })
       .then(res => res.json())
       .then(data => {
         const loadedNodes = data.nodes.map(n => ({
@@ -113,7 +116,10 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
       };
       fetch(`${API_BASE}/connections`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-User-ID": getUserId() // 헤더 추가
+        },
         body: JSON.stringify(newConn)
       }).then(() => {
         setConnections(prev => [...prev, newConn]);
@@ -153,7 +159,10 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
       if (node) {
         fetch(`${API_BASE}/nodes/${node.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "X-User-ID": getUserId() // 헤더 추가
+          },
           body: JSON.stringify({ x: node.x, y: node.y })
         });
       }
@@ -206,7 +215,10 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
     };
     fetch(`${API_BASE}/nodes`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "X-User-ID": getUserId() // 헤더 추가
+      },
       body: JSON.stringify(newNodeReq)
     })
     .then(res => res.json())
@@ -218,7 +230,10 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
   const handleDeleteNode = (e, nodeId) => {
     e.stopPropagation();
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    fetch(`${API_BASE}/nodes/${nodeId}`, { method: "DELETE" })
+    fetch(`${API_BASE}/nodes/${nodeId}`, { 
+      method: "DELETE",
+      headers: { "X-User-ID": getUserId() } // 헤더 추가
+    })
       .then(res => {
           if(!res.ok) throw new Error("삭제 실패");
           setNodes(prev => prev.filter(n => n.id !== nodeId));
@@ -231,7 +246,10 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
   /* ── 연결선 삭제 ── */
   const handleConnectionClick = (conn) => {
     if(window.confirm('연결을 삭제하시겠습니까?')){
-        fetch(`${API_BASE}/connections?from=${conn.from}&to=${conn.to}`, { method: 'DELETE' })
+        fetch(`${API_BASE}/connections?from=${conn.from}&to=${conn.to}`, { 
+          method: 'DELETE',
+          headers: { "X-User-ID": getUserId() } // 헤더 추가
+        })
           .then(() => setConnections(prev => prev.filter(c => c.id !== conn.id)));
     }
   };
@@ -242,7 +260,10 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
   const saveNodeData = (node) => {
     fetch(`${API_BASE}/nodes/${node.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "X-User-ID": getUserId() // 헤더 추가
+      },
       body: JSON.stringify({ title: node.title, content: node.content })
     });
   };
@@ -253,14 +274,21 @@ export default function WorkflowPage({ onHome, onStudy, onTest }) {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
-    fetch(`${API_BASE}/nodes/${nodeId}/files`, { method: "POST", body: formData })
+    fetch(`${API_BASE}/nodes/${nodeId}/files`, { 
+      method: "POST", 
+      headers: { "X-User-ID": getUserId() }, // 헤더 추가
+      body: formData 
+    })
       .then(() => fetchWorkflowData());
   };
 
   const handleFileDelete = (e, fileId) => {
     e.stopPropagation();
     if (!window.confirm("파일을 삭제하시겠습니까?")) return;
-    fetch(`${API_BASE}/files/${fileId}`, { method: "DELETE" })
+    fetch(`${API_BASE}/files/${fileId}`, { 
+      method: "DELETE",
+      headers: { "X-User-ID": getUserId() } // 헤더 추가
+    })
       .then(res => {
         if (!res.ok) throw new Error("파일 삭제 실패");
         fetchWorkflowData();

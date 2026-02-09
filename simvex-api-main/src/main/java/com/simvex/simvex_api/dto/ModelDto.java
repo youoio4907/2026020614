@@ -9,7 +9,8 @@ public class ModelDto {
     private String modelUrl;
     
     private String description;
-    private String aiSummary;
+    // [삭제됨] aiSummary 필드 제거
+    
     private String domainKey;
     private String categoryKey;
     private String slug;
@@ -23,7 +24,8 @@ public class ModelDto {
         dto.setModelUrl(e.getModelUrl());
         
         dto.setDescription(e.getDescription());
-        dto.setAiSummary(e.getAiSummary());
+        // [삭제됨] dto.setAiSummary(e.getAiSummary()); 라인 제거
+        
         dto.setDomainKey(e.getDomainKey());
         dto.setCategoryKey(e.getCategoryKey());
         dto.setSlug(e.getSlug());
@@ -44,8 +46,7 @@ public class ModelDto {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getAiSummary() { return aiSummary; }
-    public void setAiSummary(String aiSummary) { this.aiSummary = aiSummary; }
+    // [삭제됨] aiSummary Getter/Setter 제거
 
     public String getDomainKey() { return domainKey; }
     public void setDomainKey(String domainKey) { this.domainKey = domainKey; }
