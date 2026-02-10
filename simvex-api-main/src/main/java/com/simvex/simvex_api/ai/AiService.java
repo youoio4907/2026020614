@@ -30,8 +30,7 @@ public class AiService {
             ModelRepository modelRepository,
             AiChatHistoryRepository aiChatHistoryRepository,
             OpenAIClient openAIClient,
-            MockAiClient mockAiClient
-    ) {
+            MockAiClient mockAiClient) {
         this.partRepository = partRepository;
         this.modelRepository = modelRepository;
         this.aiChatHistoryRepository = aiChatHistoryRepository;
@@ -53,13 +52,14 @@ public class AiService {
                         - Model Title: %s
                         - Model Description: %s
                         """.formatted(m.getTitle(), m.getDescription() != null ? m.getDescription() : "N/A");
-                
+
                 // [삭제됨] 모델 기본 맥락(m.getAiSummary()) 로드 로직 제거
             }
 
             // [오직 내 기록만 사용]
             if (userId != null) {
-                Optional<AiChatHistoryEntity> lastChat = aiChatHistoryRepository.findTopByModel_IdAndUserIdOrderByCreatedAtDesc(modelId, userId);
+                Optional<AiChatHistoryEntity> lastChat = aiChatHistoryRepository
+                        .findTopByModel_IdAndUserIdOrderByCreatedAtDesc(modelId, userId);
                 if (lastChat.isPresent() && lastChat.get().getAiSummary() != null) {
                     previousAiSummary = lastChat.get().getAiSummary();
                 }
@@ -102,12 +102,17 @@ public class AiService {
                 %s
 
                 [Instructions]
-                1. Answer the user's question based on the Context Info.
-                2. If the context has a conversation history, use it.
-                3. Infer function from name if description is missing.
-                4. Answer in helpful Korean.
 
-                주어진 정보는 참고만 하고 question에 대해서만 답해줘
+                Answer the user's question based on the Context Info.
+                If the context has a conversation history, use it.
+                Infer function from name if description is missing.
+
+                Answer in Korean. Use line breaks to separate paragraphs or list items clearly.
+
+                Keep your answer concise and to the point. Avoid unnecessary rhetoric or repetition.
+                Summarize the explanation in 3~5 sentences if possible.
+
+                주어진 정보는 참고만 하고 반드시 question에 대해서만 답해줘
                 [Question]
                 %s
                 """.formatted(modelContext, partContext, question);
@@ -125,7 +130,8 @@ public class AiService {
             }
             return new AiAnswerResult(wrapper.text(), wrapper.responseId(), "openai", null, null);
         } catch (WebClientResponseException e) {
-            return new AiAnswerResult("Error", null, "openai", "http_" + e.getStatusCode().value(), e.getResponseBodyAsString());
+            return new AiAnswerResult("Error", null, "openai", "http_" + e.getStatusCode().value(),
+                    e.getResponseBodyAsString());
         } catch (Exception e) {
             return new AiAnswerResult("Error", null, "openai", "error", e.getMessage());
         }
@@ -134,15 +140,16 @@ public class AiService {
     // 4. 대화 저장 (유지: 히스토리에만 저장)
     @Transactional
     public void saveChatInteraction(Long modelId, String question, String answer, String newAiSummary, String userId) {
-        if (modelId == null) return;
-        
+        if (modelId == null)
+            return;
+
         ModelEntity model = modelRepository.findById(modelId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Model ID"));
 
         AiChatHistoryEntity history = new AiChatHistoryEntity(model, question, answer, userId, newAiSummary);
         aiChatHistoryRepository.save(history);
     }
-    
+
     // 5. 조회 (유지)
     public List<AiChatHistoryDto> getChatHistory(Long modelId, String userId) {
         return aiChatHistoryRepository.findByModel_IdAndUserIdOrderByCreatedAtAsc(modelId, userId)
@@ -151,6 +158,10 @@ public class AiService {
                 .toList();
     }
 
-    public record AiAnswerResult(String answer, String newResponseId, String provider, String errorCode, String errorMessage) {}
-    public record AiChatHistoryDto(String question, String answer, java.time.LocalDateTime timestamp) {}
+    public record AiAnswerResult(String answer, String newResponseId, String provider, String errorCode,
+            String errorMessage) {
+    }
+
+    public record AiChatHistoryDto(String question, String answer, java.time.LocalDateTime timestamp) {
+    }
 }
